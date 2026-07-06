@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "usetax-intelligence-layer",
   "version": "1.0.0",
-  "description": "AI extraction intelligence layer over SAP Document AI using Claude via SAP AI Core - USE Tax validation and reconciliation",
+  "description": "AI extraction intelligence layer over SAP Document AI using Claude via SAP AI Core",
   "dependencies": {
     "@sap/cds": "^9.9.2",
     "dotenv": "^17.4.2",
