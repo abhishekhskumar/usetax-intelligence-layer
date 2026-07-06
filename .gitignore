@@ -1,0 +1,26 @@
+﻿# Secrets - NEVER commit
+.env
+.env.*
+!.env.example
+*.key
+default-env.json
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# CAP / build artifacts
+gen/
+*.db
+*.sqlite
+dist/
+mta_archives/
+*.mtar
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/

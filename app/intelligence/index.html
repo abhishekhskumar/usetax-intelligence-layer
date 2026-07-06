@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Agentic AI: USE Tax Validation and Reconciliation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: '72', 'Segoe UI', Arial, sans-serif; }
+    body { background: #edeff0; color: #32363a; }
+    .shell { background: #354a5f; color: white; padding: 0 16px; height: 44px; display: flex; align-items: center; gap: 14px; }
+    .shell .wz { font-size: 14px; color: #91c8f6; }
+    .shell .app-name { font-size: 15px; font-weight: 600; }
+    .shell .spacer { flex: 1; }
+    .shell .icons { display: flex; gap: 18px; font-size: 15px; opacity: 0.9; }
+    .shell .avatar { width: 30px; height: 30px; border-radius: 50%; background: #7996ad; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .subheader { background: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e0e0e0; }
+    .subheader .circle { width: 26px; height: 26px; border: 1px solid #0a6ed1; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0a6ed1; cursor: pointer; }
+    .subheader h1 { font-size: 16px; font-weight: 600; }
+    .container { display: flex; height: calc(100vh - 44px - 47px); }
+    .left { flex: 1; overflow-y: auto; }
+    .right { width: 38%; border-left: 1px solid #d0d0d0; background: #525659; display: flex; flex-direction: column; }
+    .right .pdf-bar { background: #323639; color: #ccc; padding: 8px 12px; font-size: 12px; }
+    .right .pdf-body { flex: 1; overflow: auto; }
+    .right iframe { width: 100%; height: 100%; border: none; }
+    .right img { width: 100%; }
+    .pdf-empty { color: #999; display: flex; align-items: center; justify-content: center; height: 100%; font-size: 13px; }
+    .tabs { background: white; display: flex; padding: 0 20px; border-bottom: 1px solid #e0e0e0; gap: 2px; overflow-x: auto; }
+    .tab { padding: 12px 16px; font-size: 12px; color: #6a6d70; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .tab.active { color: #0a6ed1; font-weight: 600; border-bottom-color: #0a6ed1; }
+    .tab.ai-tab.active { color: #0070f2; border-bottom-color: #0070f2; }
+    .tab .badge-new { background: #0070f2; color: white; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 5px; }
+    .tab-content { padding: 18px; }
+    .panel { display: none; } .panel.active { display: block; }
+    .upload-zone { border: 2px dashed #aab; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; background: white; margin-bottom: 14px; }
+    .upload-zone:hover { border-color: #0a6ed1; background: #f0f7ff; }
+    .upload-zone.active { border-color: #107e3e; background: #f0fdf5; }
+    .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+    button.primary { padding: 9px 22px; border: none; border-radius: 6px; background: #0a6ed1; color: white; font-weight: 600; font-size: 13px; cursor: pointer; }
+    button.primary:disabled { background: #ccc; cursor: not-allowed; }
+    .card { background: white; border-radius: 8px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .card-title { padding: 12px 16px; font-size: 14px; font-weight: 600; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #d6eaf8; text-align: left; padding: 10px 14px; font-weight: 600; font-size: 12px; }
+    td { padding: 10px 14px; border-top: 1px solid #f0f0f0; vertical-align: top; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .pill.verified { background: #ebf9f0; color: #107e3e; }
+    .pill.corrected { background: #fff4e5; color: #df6e0c; }
+    .pill.flagged { background: #fef0f0; color: #bb0000; }
+    .pill.keep { background: #ebf9f0; color: #107e3e; }
+    .pill.freight { background: #eef2ff; color: #3452d1; }
+    .pill.suppress { background: #fef0f0; color: #bb0000; }
+    .pill.pass { background: #ebf9f0; color: #107e3e; }
+    .pill.fail { background: #fef0f0; color: #bb0000; }
+    .strike { text-decoration: line-through; color: #bb0000; } .arrow { color: #107e3e; font-weight: 600; }
+    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #eee; }
+    .metric { background: white; padding: 16px; text-align: center; }
+    .metric .v { font-size: 26px; font-weight: 700; } .metric .l { font-size: 11px; color: #888; margin-top: 2px; }
+    .ai-banner { background: linear-gradient(90deg, #0070f2, #0a3d8f); color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; }
+    .hero-banner { background: linear-gradient(135deg, #0a3d8f, #0070f2, #00b4d8); color: white; padding: 20px; border-radius: 10px; margin-bottom: 16px; }
+    .hero-banner h2 { font-size: 18px; margin-bottom: 6px; } .hero-banner p { font-size: 13px; opacity: 0.92; line-height: 1.5; }
+    .status-msg { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 14px; }
+    .status-msg.loading { background: #eef5ff; color: #0a6ed1; }
+    .status-msg.done { background: #f0fdf5; color: #107e3e; }
+    .status-msg.error { background: #fef0f0; color: #bb0000; }
+    .spinner { width: 14px; height: 14px; border: 2px solid #0a6ed1; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .kv { display: grid; grid-template-columns: 180px 1fr 1fr; }
+    .kv > div { padding: 9px 14px; border-top: 1px solid #f0f0f0; font-size: 13px; }
+    .kv .hdr { background: #d6eaf8; font-weight: 600; font-size: 12px; border: none; }
+    .kv .k { color: #6a6d70; }
+    .conf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; }
+    .conf-high { background: #107e3e; } .conf-med { background: #df6e0c; } .conf-low { background: #bb0000; }
+    .reason { color: #555; font-size: 12px; line-height: 1.5; margin-top: 3px; }
+    .placeholder { padding: 36px; text-align: center; color: #999; font-size: 13px; }
+    .check-item { padding: 10px 14px; border-top: 1px solid #f0f0f0; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <span>&lsaquo;</span><span class="wz">Build Work Zone</span>
+    <span class="app-name">Agentic AI: USE Tax Validation and Reconciliation &#9662;</span>
+    <span class="spacer"></span><span class="icons">&#128269; &#128276; &#9671; &#128083;</span>
+    <span class="avatar">AK</span>
+  </div>
+  <div class="subheader"><span class="circle">&lsaquo;</span><h1>Asset Details</h1></div>
+
+  <div class="container">
+    <div class="left">
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('general', this)">GENERAL INFORMATION</div>
+        <div class="tab" onclick="showTab('reconciliation', this)">TAX RECONCILIATION</div>
+        <div class="tab" onclick="showTab('lineitems', this)">INVOICE LINE ITEMS</div>
+        <div class="tab" onclick="showTab('changelog', this)">CHANGE LOG</div>
+        <div class="tab ai-tab" onclick="showTab('intel', this)">&#9889; INTELLIGENCE REPORT<span class="badge-new">NEW</span></div>
+      </div>
+      <div class="tab-content">
+        <div class="ai-banner">&#9889; Extraction Intelligence Layer &mdash; Document AI baseline, verified &amp; corrected by Claude (SAP AI Core). Every field audited against the source document.</div>
+        <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display:none" />
+          <p style="font-size:15px; font-weight:500;">&#128196; Drop invoice PDF to run the intelligence audit</p>
+          <p style="font-size:12px; color:#888; margin-top:4px;">or click to browse</p>
+        </div>
+        <div class="controls">
+          <button class="primary" id="processBtn" disabled onclick="processInvoice()">Run Intelligence Audit</button>
+          <span id="fileName" style="font-size:12px; color:#555;"></span>
+        </div>
+        <div id="statusBox"></div>
+
+        <div class="panel active" id="panel-general">
+          <div class="card">
+            <div class="card-title">General Information <span id="genStat"></span></div>
+            <div class="kv" id="genKv">
+              <div class="hdr">Field Name</div><div class="hdr">Doc AI Value</div><div class="hdr">AI-Verified Value</div>
+              <div class="placeholder" style="grid-column:1/4;">Upload an invoice to audit all header fields</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-reconciliation">
+          <div class="card"><div class="card-title">Tax Reconciliation <span style="font-size:11px;color:#888;">(Vertex mocked &mdash; extraction feeds this)</span></div>
+            <div class="placeholder">Vertex jurisdiction tax reconciliation uses the AI-verified fields. Mocked here &mdash; extraction accuracy is the focus.</div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-lineitems">
+          <div class="card"><div class="card-title">Invoice Line Items <span style="font-size:11px;color:#107e3e;">CAPM-ready</span></div>
+            <div id="lineItemsContent"><div class="placeholder">Upload an invoice to see clean line items</div></div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-changelog">
+          <div class="card"><div class="card-title">Change Log</div>
+            <div class="placeholder">Field-level change history (production: @cap-js/change-tracking)</div>
+          </div>
+        </div>
+
+        <div class="panel" id="panel-intel">
+          <div id="intelContent">
+            <div class="hero-banner">
+              <h2>&#9889; Extraction Intelligence Report</h2>
+              <p>An engine-agnostic AI layer that verifies, corrects, and explains every extracted field &mdash; turning ~80% raw OCR into audit-ready data. Works over SAP Document AI today; the same intelligence wraps any extraction engine or document type.</p>
+            </div>
+            <div class="placeholder">Upload an invoice to generate the intelligence report</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="pdf-bar">&#128196; Invoice Preview</div>
+      <div class="pdf-body" id="pdfBody"><div class="pdf-empty">Preview appears after upload</div></div>
+    </div>
+  </div>
+
+  <script>
+    let fileBase64=null, fileMediaType=null, lastResult=null;
+    const dropZone=document.getElementById('dropZone'), fileInput=document.getElementById('fileInput'), processBtn=document.getElementById('processBtn');
+    fileInput.addEventListener('change', function(e){handleFile(e.target.files[0]);});
+    dropZone.addEventListener('dragover', function(e){e.preventDefault();});
+    dropZone.addEventListener('drop', function(e){e.preventDefault();handleFile(e.dataTransfer.files[0]);});
+
+    function handleFile(file){
+      if(!file)return;
+      document.getElementById('fileName').textContent=file.name;
+      fileMediaType=file.type||'application/pdf';
+      dropZone.classList.add('active');
+      dropZone.querySelector('p').textContent='✅ '+file.name;
+      var url=URL.createObjectURL(file);
+      document.getElementById('pdfBody').innerHTML = fileMediaType==='application/pdf'
+        ? '<iframe src="'+url+'"></iframe>' : '<img src="'+url+'" />';
+      var reader=new FileReader();
+      reader.onload=function(){fileBase64=reader.result.split(',')[1];processBtn.disabled=false;};
+      reader.readAsDataURL(file);
+    }
+    function showTab(name, el){
+      document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+      el.classList.add('active');
+      document.getElementById('panel-'+name).classList.add('active');
+    }
+    function confDot(c){var cls=c>=90?'conf-high':c>=70?'conf-med':'conf-low';return '<span class="conf-dot '+cls+'" title="'+c+'%"></span>';}
+    function verdictPill(v){var m={VERIFIED:'verified',CORRECTED:'corrected',FLAGGED:'flagged'};return '<span class="pill '+(m[v]||'verified')+'">'+v+'</span>';}
+
+    async function processInvoice(){
+      var statusBox=document.getElementById('statusBox');
+      processBtn.disabled=true;
+      statusBox.innerHTML='<div class="status-msg loading"><span class="spinner"></span>Running: PDF text extraction → Document AI → Claude whole-invoice audit...</div>';
+      try{
+        var response=await fetch('/api/intelligence/processInvoice',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({documentId:'UI-'+Date.now(),schemaType:'auto',invoiceBase64:fileBase64,mediaType:fileMediaType})
+        });
+        var text=await response.text();
+        var data;
+        try{var p=JSON.parse(text);data=typeof p.value==='string'?JSON.parse(p.value):(p.value||p);}catch(e){data=JSON.parse(text);}
+        lastResult=data;
+        var s=data.stats||{};
+        var modeLabel=(data.invoiceMode||'').replace('_',' ');
+        statusBox.innerHTML='<div class="status-msg done">✅ Audit complete in '+(data.processingTimeMs||'?')+'ms — '+(s.verified||0)+' verified, '+(s.corrected||0)+' corrected, '+(s.flagged||0)+' flagged <span class="pill verified" style="margin-left:10px;">Auto-classified: '+modeLabel+'</span></div>';
+        renderAll(data);
+      }catch(err){
+        statusBox.innerHTML='<div class="status-msg error">❌ '+err.message+'</div>';
+      }
+      processBtn.disabled=false;
+    }
+
+    function renderAll(data){ renderGeneral(data); renderLineItems(data); renderIntel(data); }
+
+    function renderGeneral(data){
+      var fields=data.fields||[];
+      var html='<div class="hdr">Field Name</div><div class="hdr">Doc AI Value</div><div class="hdr">AI-Verified Value</div>';
+      if(!fields.length){ html+='<div class="placeholder" style="grid-column:1/4;">No fields</div>'; }
+      fields.forEach(function(f){
+        var changed=f.verdict==='CORRECTED';
+        html+='<div class="k">'+f.fieldName+(f.taxCritical?' ⚠️':'')+'</div>';
+        html+='<div style="'+(changed?'color:#bb0000;':'')+'">'+(f.docAIValue||'—')+'</div>';
+        html+='<div>'+(f.correctValue||f.docAIValue||'—')+confDot(f.confidence||0)+' '+verdictPill(f.verdict)+'</div>';
+      });
+      document.getElementById('genKv').innerHTML=html;
+      var s=data.stats||{};
+      document.getElementById('genStat').innerHTML='<span style="font-size:11px;color:#888;">'+(s.verified||0)+' verified · '+(s.corrected||0)+' corrected · '+(s.flagged||0)+' flagged</span>';
+    }
+
+    function renderLineItems(data){
+      var items=data.lineItems||[];
+      if(!items.length){document.getElementById('lineItemsContent').innerHTML='<div class="placeholder">No line items</div>';return;}
+      var html='<table><tr><th>#</th><th>Description</th><th>Amount</th><th>Status</th></tr>';
+      items.forEach(function(li,i){
+        var pill=li.status==='FREIGHT'?'<span class="pill freight">FREIGHT</span>':'<span class="pill keep">KEEP</span>';
+        html+='<tr><td>'+(i+1)+'</td><td>'+(li.description||'—')+'</td><td style="font-family:monospace;">$'+(li.netPrice||'0')+'</td><td>'+pill+'</td></tr>';
+      });
+      html+='</table>';
+      if(data.freightTotal) html+='<div style="padding:12px 14px;font-size:12px;color:#3452d1;">Freight to distribute: $'+data.freightTotal+'</div>';
+      document.getElementById('lineItemsContent').innerHTML=html;
+    }
+
+    function renderIntel(data){
+      var fields=data.fields||[], s=data.stats||{}, checks=data.consistencyChecks||[], lic=data.lineItemCorrections||[];
+      var html='<div class="hero-banner"><h2>⚡ Extraction Intelligence Report</h2><p>An engine-agnostic AI layer that verifies, corrects, and explains every extracted field — turning ~80% raw OCR into audit-ready data. Works over SAP Document AI today; the same intelligence wraps any extraction engine or document type.</p></div>';
+
+      html+='<div class="card"><div class="metric-row">';
+      html+='<div class="metric"><div class="v">'+(s.total||0)+'</div><div class="l">Fields Audited</div></div>';
+      html+='<div class="metric"><div class="v" style="color:#107e3e;">'+(s.verified||0)+'</div><div class="l">Verified</div></div>';
+      html+='<div class="metric"><div class="v" style="color:#df6e0c;">'+(s.corrected||0)+'</div><div class="l">Corrected by AI</div></div>';
+      html+='<div class="metric"><div class="v" style="color:#bb0000;">'+(s.flagged||0)+'</div><div class="l">Flagged for Review</div></div>';
+      html+='</div></div>';
+
+      if(data.summary) html+='<div class="card"><div class="card-title">Executive Summary</div><div style="padding:14px;font-size:13px;line-height:1.6;">'+data.summary+'</div></div>';
+
+      var corrected=fields.filter(function(f){return f.verdict==='CORRECTED'||f.verdict==='FLAGGED';});
+      if(corrected.length){
+        html+='<div class="card"><div class="card-title">What the AI Caught</div>';
+        corrected.forEach(function(f){
+          html+='<div style="padding:12px 14px;border-top:1px solid #f0f0f0;">'+verdictPill(f.verdict)+' <strong style="margin-left:8px;">'+f.fieldName+'</strong>';
+          if(f.verdict==='CORRECTED') html+='<div style="margin-top:5px;"><span class="strike">'+(f.docAIValue||'(empty)')+'</span> <span class="arrow">→ '+(f.correctValue||'')+'</span></div>';
+          html+='<div class="reason">💡 '+(f.reason||'')+'</div></div>';
+        });
+        html+='</div>';
+      }
+
+      if(checks.length){
+        html+='<div class="card"><div class="card-title">Cross-Field Consistency Checks</div>';
+        checks.forEach(function(c){
+          var pill=c.result==='PASS'?'<span class="pill pass">✓ PASS</span>':'<span class="pill fail">✗ FAIL</span>';
+          html+='<div class="check-item">'+pill+'<div><strong>'+c.check+'</strong><div class="reason">'+(c.detail||'')+'</div></div></div>';
+        });
+        html+='</div>';
+      }
+
+      if(lic.length){
+        html+='<div class="card"><div class="card-title">Line-Item Adjudication</div>';
+        lic.forEach(function(c){
+          var pill=c.action.indexOf('SUPPRESS')===0?'<span class="pill suppress">'+c.action.replace(/_/g,' ')+'</span>':c.action.indexOf('FLAGGED')===0?'<span class="pill freight">'+c.action.replace(/_/g,' ')+'</span>':'<span class="pill corrected">'+c.action.replace(/_/g,' ')+'</span>';
+          html+='<div style="padding:10px 14px;border-top:1px solid #f0f0f0;font-size:12px;">'+pill+' <strong style="margin-left:8px;">'+(c.description||'')+'</strong>';
+          if(c.oldValue||c.newValue) html+='<div style="margin-top:4px;"><span class="strike">'+(c.oldValue||'')+'</span> <span class="arrow">→ '+(c.newValue||'')+'</span></div>';
+          html+='<div class="reason">💡 '+(c.reason||'')+'</div></div>';
+        });
+        html+='</div>';
+      }
+
+      html+='<div class="card"><div class="card-title">Reusable Asset — Beyond USE Tax</div><div style="padding:14px;font-size:13px;line-height:1.7;color:#444;">This intelligence layer is <strong>domain-configurable</strong>. Swap the rule set and it audits any extraction workflow: <strong>AP invoices, contracts, claims, KYC documents, purchase orders</strong>. The pattern — extract with any engine, verify with an LLM against the source, explain every change — is a repeatable accelerator for document-heavy processes across the enterprise.</div></div>';
+
+      document.getElementById('intelContent').innerHTML=html;
+    }
+  </script>
+</body>
+</html>
