@@ -1,286 +1,1325 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Agentic AI: USE Tax Validation and Reconciliation</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: '72', 'Segoe UI', Arial, sans-serif; }
-    body { background: #edeff0; color: #32363a; }
-    .shell { background: #354a5f; color: white; padding: 0 16px; height: 44px; display: flex; align-items: center; gap: 14px; }
-    .shell .wz { font-size: 14px; color: #91c8f6; }
-    .shell .app-name { font-size: 15px; font-weight: 600; }
-    .shell .spacer { flex: 1; }
-    .shell .icons { display: flex; gap: 18px; font-size: 15px; opacity: 0.9; }
-    .shell .avatar { width: 30px; height: 30px; border-radius: 50%; background: #7996ad; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-    .subheader { background: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e0e0e0; }
-    .subheader .circle { width: 26px; height: 26px; border: 1px solid #0a6ed1; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0a6ed1; cursor: pointer; }
-    .subheader h1 { font-size: 16px; font-weight: 600; }
-    .container { display: flex; height: calc(100vh - 44px - 47px); }
-    .left { flex: 1; overflow-y: auto; }
-    .right { width: 38%; border-left: 1px solid #d0d0d0; background: #525659; display: flex; flex-direction: column; }
-    .right .pdf-bar { background: #323639; color: #ccc; padding: 8px 12px; font-size: 12px; }
-    .right .pdf-body { flex: 1; overflow: auto; }
-    .right iframe { width: 100%; height: 100%; border: none; }
-    .right img { width: 100%; }
-    .pdf-empty { color: #999; display: flex; align-items: center; justify-content: center; height: 100%; font-size: 13px; }
-    .tabs { background: white; display: flex; padding: 0 20px; border-bottom: 1px solid #e0e0e0; gap: 2px; overflow-x: auto; }
-    .tab { padding: 12px 16px; font-size: 12px; color: #6a6d70; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .tab.active { color: #0a6ed1; font-weight: 600; border-bottom-color: #0a6ed1; }
-    .tab.ai-tab.active { color: #0070f2; border-bottom-color: #0070f2; }
-    .tab .badge-new { background: #0070f2; color: white; font-size: 9px; padding: 1px 5px; border-radius: 8px; margin-left: 5px; }
-    .tab-content { padding: 18px; }
-    .panel { display: none; } .panel.active { display: block; }
-    .upload-zone { border: 2px dashed #aab; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; background: white; margin-bottom: 14px; }
-    .upload-zone:hover { border-color: #0a6ed1; background: #f0f7ff; }
-    .upload-zone.active { border-color: #107e3e; background: #f0fdf5; }
-    .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
-    select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
-    button.primary { padding: 9px 22px; border: none; border-radius: 6px; background: #0a6ed1; color: white; font-weight: 600; font-size: 13px; cursor: pointer; }
-    button.primary:disabled { background: #ccc; cursor: not-allowed; }
-    .card { background: white; border-radius: 8px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-    .card-title { padding: 12px 16px; font-size: 14px; font-weight: 600; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #d6eaf8; text-align: left; padding: 10px 14px; font-weight: 600; font-size: 12px; }
-    td { padding: 10px 14px; border-top: 1px solid #f0f0f0; vertical-align: top; }
-    .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-    .pill.verified { background: #ebf9f0; color: #107e3e; }
-    .pill.corrected { background: #fff4e5; color: #df6e0c; }
-    .pill.flagged { background: #fef0f0; color: #bb0000; }
-    .pill.keep { background: #ebf9f0; color: #107e3e; }
-    .pill.freight { background: #eef2ff; color: #3452d1; }
-    .pill.suppress { background: #fef0f0; color: #bb0000; }
-    .pill.pass { background: #ebf9f0; color: #107e3e; }
-    .pill.fail { background: #fef0f0; color: #bb0000; }
-    .strike { text-decoration: line-through; color: #bb0000; } .arrow { color: #107e3e; font-weight: 600; }
-    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #eee; }
-    .metric { background: white; padding: 16px; text-align: center; }
-    .metric .v { font-size: 26px; font-weight: 700; } .metric .l { font-size: 11px; color: #888; margin-top: 2px; }
-    .ai-banner { background: linear-gradient(90deg, #0070f2, #0a3d8f); color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; }
-    .hero-banner { background: linear-gradient(135deg, #0a3d8f, #0070f2, #00b4d8); color: white; padding: 20px; border-radius: 10px; margin-bottom: 16px; }
-    .hero-banner h2 { font-size: 18px; margin-bottom: 6px; } .hero-banner p { font-size: 13px; opacity: 0.92; line-height: 1.5; }
-    .status-msg { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 14px; }
-    .status-msg.loading { background: #eef5ff; color: #0a6ed1; }
-    .status-msg.done { background: #f0fdf5; color: #107e3e; }
-    .status-msg.error { background: #fef0f0; color: #bb0000; }
-    .spinner { width: 14px; height: 14px; border: 2px solid #0a6ed1; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .kv { display: grid; grid-template-columns: 180px 1fr 1fr; }
-    .kv > div { padding: 9px 14px; border-top: 1px solid #f0f0f0; font-size: 13px; }
-    .kv .hdr { background: #d6eaf8; font-weight: 600; font-size: 12px; border: none; }
-    .kv .k { color: #6a6d70; }
-    .conf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; }
-    .conf-high { background: #107e3e; } .conf-med { background: #df6e0c; } .conf-low { background: #bb0000; }
-    .reason { color: #555; font-size: 12px; line-height: 1.5; margin-top: 3px; }
-    .placeholder { padding: 36px; text-align: center; color: #999; font-size: 13px; }
-    .check-item { padding: 10px 14px; border-top: 1px solid #f0f0f0; font-size: 13px; display: flex; align-items: center; gap: 10px; }
-  </style>
+<meta charset="utf-8" />
+<title>Agentic AI: USE Tax Validation and Reconciliation</title>
+<script src="lib/pdf.min.js"></script>
+<script>if(window['pdfjsLib'])window['pdfjsLib'].GlobalWorkerOptions.workerSrc='lib/pdf.worker.min.js';</script>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'72','Segoe UI',Arial,sans-serif; }
+  body { background:#edeff0; color:#32363a; }
+  .shell { background:#354a5f; color:#fff; padding:0 16px; height:44px; display:flex; align-items:center; gap:14px; }
+  .shell .wz { font-size:14px; color:#91c8f6; } .shell .app-name { font-size:15px; font-weight:600; }
+  .shell .spacer { flex:1; } .shell .icons { display:flex; gap:18px; font-size:15px; opacity:.9; }
+  .shell .avatar { width:30px; height:30px; border-radius:50%; background:#7996ad; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+  .subheader { background:#fff; padding:10px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #e0e0e0; }
+  .subheader .circle { width:26px; height:26px; border:1px solid #0a6ed1; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#0a6ed1; cursor:pointer; }
+  .subheader h1 { font-size:16px; font-weight:600; }
+  .container { display:flex; height:calc(100vh - 91px); overflow:hidden; }
+  .left { flex:0 0 62%; min-width:340px; overflow-y:auto; } .right { flex:1; min-width:200px; background:#525659; display:flex; flex-direction:column; }
+  #dragHandle { flex:0 0 6px; cursor:col-resize; background:#d5dde3; transition:background .15s; }
+  #dragHandle:hover { background:#aab8c2; }
+  .right .pdf-bar { background:#323639; color:#ccc; padding:8px 12px; font-size:12px; }
+  .right .pdf-body { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+  .pdf-nav { background:#2a2d30; color:#ccc; padding:5px 12px; font-size:12px; display:flex; align-items:center; gap:8px; justify-content:center; flex-shrink:0; border-bottom:1px solid #1e2124; }
+  .pdf-nav button { background:none; border:1px solid #666; color:#ccc; padding:2px 10px; border-radius:3px; cursor:pointer; font-size:12px; line-height:1.5; }
+  .pdf-nav button:disabled { opacity:.35; cursor:default; }
+  .pdf-nav span { min-width:90px; text-align:center; }
+  #canvasWrap { flex:1; overflow:auto; position:relative; background:#404040; }
+  #pdfCanvas { display:block; }
+  #ocrLayer { position:absolute; top:0; left:0; pointer-events:all; cursor:default; }
+  #ocrTooltip { position:fixed; background:#32363a; color:#fff; font-size:11px; line-height:1.5; padding:7px 10px; border-radius:5px; pointer-events:none; z-index:1000; display:none; max-width:240px; box-shadow:0 3px 10px rgba(0,0,0,.35); }
+  .right iframe { width:100%; height:100%; border:none; } .right img { width:100%; }
+  .pdf-empty { color:#999; display:flex; align-items:center; justify-content:center; height:100%; font-size:13px; }
+  .tabs { background:#fff; display:flex; padding:0 20px; border-bottom:1px solid #e0e0e0; gap:2px; overflow-x:auto; }
+  .tab { padding:12px 16px; font-size:12px; color:#6a6d70; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; }
+  .tab.active { color:#0a6ed1; font-weight:600; border-bottom-color:#0a6ed1; }
+  .tab.ai-tab.active { color:#0070f2; border-bottom-color:#0070f2; }
+  .tab .badge-new { background:#0070f2; color:#fff; font-size:9px; padding:1px 5px; border-radius:8px; margin-left:5px; }
+  .tab-content { padding:18px; } .panel { display:none; } .panel.active { display:block; }
+  .upload-zone { border:2px dashed #aab; border-radius:8px; padding:20px; text-align:center; cursor:pointer; background:#fff; margin-bottom:14px; }
+  .upload-zone:hover { border-color:#0a6ed1; background:#f0f7ff; } .upload-zone.active { border-color:#107e3e; background:#f0fdf5; }
+  .controls { display:flex; gap:12px; align-items:center; margin-bottom:14px; }
+  button.primary { padding:9px 22px; border:none; border-radius:6px; background:#0a6ed1; color:#fff; font-weight:600; font-size:13px; cursor:pointer; }
+  button.primary:disabled { background:#ccc; cursor:not-allowed; }
+  .rerun-link { font-size:11px; font-weight:400; opacity:.78; cursor:pointer; margin-left:6px; text-decoration:underline; }
+  .card { background:#fff; border-radius:8px; margin-bottom:14px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .card-title { padding:12px 16px; font-size:14px; font-weight:600; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+  .sec-title { font-size:16px; font-weight:700; margin:6px 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; } th { background:#aadaf5; text-align:left; padding:9px 12px; font-weight:600; font-size:12px; }
+  td { padding:9px 12px; border-top:1px solid #f0f0f0; vertical-align:top; } .num { text-align:right; font-family:'Consolas',monospace; }
+  .pill { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; }
+  .pill.verified { background:#ebf9f0; color:#107e3e; } .pill.corrected { background:#fff4e5; color:#df6e0c; } .pill.flagged { background:#fef0f0; color:#bb0000; }
+  .pill.pass { background:#ebf9f0; color:#107e3e; } .pill.fail { background:#fef0f0; color:#bb0000; }
+  .pill.construction { background:#fdf2e5; color:#b25000; } .pill.noncon { background:#e8f4fd; color:#0a6ed1; }
+  .pill.mock { background:#ffe0b2; color:#8a5a00; } .pill.live { background:#ebf9f0; color:#107e3e; }
+  .strike { text-decoration:line-through; color:#bb0000; } .arrow { color:#107e3e; font-weight:600; }
+  .metric-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#eee; }
+  .metric { background:#fff; padding:16px; text-align:center; } .metric .v { font-size:26px; font-weight:700; } .metric .l { font-size:11px; color:#888; margin-top:2px; }
+  .ai-banner { background:linear-gradient(90deg,#0070f2,#0a3d8f); color:#fff; padding:12px 16px; border-radius:8px; margin-bottom:14px; font-size:13px; }
+  .hero-banner { background:linear-gradient(135deg,#0a3d8f,#0070f2,#00b4d8); color:#fff; padding:20px; border-radius:10px; margin-bottom:16px; }
+  .hero-banner h2 { font-size:18px; margin-bottom:6px; } .hero-banner p { font-size:13px; opacity:.92; line-height:1.5; }
+  .status-msg { padding:12px 16px; border-radius:6px; font-size:13px; margin-bottom:14px; }
+  .status-msg.loading { background:#eef5ff; color:#0a6ed1; } .status-msg.done { background:#f0fdf5; color:#107e3e; } .status-msg.error { background:#fef0f0; color:#bb0000; }
+  .spinner { width:14px; height:14px; border:2px solid #0a6ed1; border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .kv { display:grid; grid-template-columns:180px 1fr 1fr; } .kv>div { padding:9px 14px; border-top:1px solid #f0f0f0; font-size:13px; }
+  .kv .hdr { background:#aadaf5; font-weight:600; font-size:12px; border:none; } .kv .k { color:#6a6d70; }
+  .conf-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-left:6px; } .conf-high { background:#107e3e; } .conf-med { background:#df6e0c; } .conf-low { background:#bb0000; }
+  .reason { color:#555; font-size:12px; line-height:1.5; margin-top:3px; } .placeholder { padding:36px; text-align:center; color:#999; font-size:13px; }
+  .check-item { padding:10px 14px; border-top:1px solid #f0f0f0; font-size:13px; display:flex; align-items:center; gap:10px; }
+  .totals-row td { font-weight:700; background:#f7f7f7; }
+  .link { color:#0a6ed1; cursor:pointer; font-weight:600; }
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; align-items:center; justify-content:center; }
+  .modal-bg.show { display:flex; }
+  .modal { background:#fff; border-radius:8px; width:90%; max-width:1000px; max-height:80vh; overflow:auto; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+  .modal-head { padding:16px 20px; font-size:16px; font-weight:700; border-bottom:1px solid #eee; }
+  .modal-foot { padding:12px 20px; text-align:right; }
+  .cv-hero { background:linear-gradient(135deg,#0a3d8f,#0070f2); color:#fff; padding:18px; border-radius:10px; margin-bottom:14px; }
+  .cv-hero h2 { font-size:17px; margin-bottom:4px; } .cv-hero p { font-size:12px; opacity:.9; line-height:1.5; }
+  .cv-two { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .cv-box { background:#fff; border-radius:8px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .cv-box h4 { font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#888; margin-bottom:10px; }
+  .cv-big { font-size:30px; font-weight:700; } .cv-cost .cv-big { color:#bb0000; } .cv-value .cv-big { color:#107e3e; }
+  .cv-sub { font-size:12px; color:#666; margin-top:4px; }
+  .lever { margin-bottom:10px; } .lever label { display:block; font-size:11px; color:#666; margin-bottom:3px; } .lever input { width:100%; padding:6px 8px; border:1px solid #ccc; border-radius:5px; font-size:13px; }
+  .payback { background:linear-gradient(90deg,#107e3e,#0a9d4a); color:#fff; padding:14px 16px; border-radius:8px; font-size:14px; margin-bottom:14px; } .payback b { font-size:20px; }
+  .worlds { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:6px; }
+  .world { padding:12px; border-radius:8px; font-size:12px; line-height:1.5; } .world.docai { background:#e8f4fd; } .world.claude { background:#eef2ff; }
+  .world h5 { font-size:12px; margin-bottom:4px; } .world.docai h5 { color:#0a6ed1; } .world.claude h5 { color:#3452d1; } .world-plus { font-size:22px; color:#888; }
+  .vision-wrap { position:relative; display:inline-block; }
+  .vision-tip { display:none; position:absolute; top:calc(100% + 8px); left:0; width:340px; background:#32363a; color:#fff; font-size:12px; line-height:1.6; padding:10px 13px; border-radius:7px; z-index:20; pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  .vision-tip::before { content:''; position:absolute; top:-5px; left:18px; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:5px solid #32363a; }
+  .vision-wrap:hover .vision-tip { display:block; }
+  .pill.planned { background:#e8edf5; color:#4a6fa5; }
+  .pill.vision  { background:#fce7f3; color:#9d174d; }
+  .picker-box { background:#fff; border-radius:8px; margin-bottom:10px; padding:12px 14px; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .picker-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .picker-header strong { font-size:13px; }
+  .picker-count { font-size:11px; color:#888; }
+  .picker-search { width:100%; padding:7px 10px; border:1px solid #ccc; border-radius:5px; font-size:13px; margin-bottom:7px; outline:none; }
+  .picker-search:focus { border-color:#0a6ed1; }
+  .picker-select { width:100%; border:1px solid #ccc; border-radius:5px; font-size:12px; font-family:'Consolas',monospace; background:#fafafa; }
+  .picker-select option { padding:4px 6px; }
+  .picker-divider { text-align:center; color:#bbb; font-size:11px; margin:10px 0 0; letter-spacing:.5px; }
+  .ma-banner-fail { margin:12px 14px;background:#fff0f0;border:1.5px solid #e53935;border-radius:8px;padding:12px 14px; }
+  .ma-banner-ok   { margin:12px 14px;background:#f0faf4;border:1.5px solid #43a047;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px; }
+  .ma-reason-list { margin:6px 0 0;padding-left:18px;font-size:12px;color:#b71c1c;line-height:1.9; }
+  .chk-row        { padding:9px 10px;margin:3px 0;border-radius:5px;display:flex;align-items:flex-start;gap:10px; }
+  .chk-icon       { font-size:15px;font-weight:700;line-height:1.3;min-width:18px;text-align:center; }
+  .chk-values     { display:flex;flex-wrap:wrap;gap:5px;margin-top:6px; }
+  .chk-val-chip   { background:#f0f0f0;border-radius:4px;padding:2px 8px;font-size:11px;font-family:'Consolas',monospace;color:#333; }
+  .quick-picks { display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+  .qp-btn { padding:3px 10px; font-size:11px; border-radius:12px; border:1px solid #ccc; background:#f4f6fb; color:#333; cursor:pointer; white-space:nowrap; transition:background .15s,border-color .15s; }
+  .qp-btn:hover { background:#e8edf5; border-color:#0a6ed1; color:#0a6ed1; }
+  .qp-btn.qp-ok { border-color:#107e3e; background:#f0faf4; color:#107e3e; }
+  .qp-btn.qp-ok:hover { background:#d4edda; }
+  .qp-btn.qp-warn { border-color:#c44; background:#fff8f8; color:#c44; }
+  .qp-btn.qp-warn:hover { background:#ffe4e4; }
+  .qp-btn.qp-alt { border-color:#a0c4e0; background:#f0f7ff; color:#1d4ed8; }
+  .qp-btn.qp-alt:hover { background:#dbeafe; }
+  .filter-toggle { display:flex; align-items:center; gap:6px; font-size:12px; color:#444; margin-bottom:7px; cursor:pointer; user-select:none; }
+  .filter-toggle input[type=checkbox] { cursor:pointer; width:14px; height:14px; }
+</style>
 </head>
 <body>
-  <div class="shell">
-    <span>&lsaquo;</span><span class="wz">Build Work Zone</span>
-    <span class="app-name">Agentic AI: USE Tax Validation and Reconciliation &#9662;</span>
-    <span class="spacer"></span><span class="icons">&#128269; &#128276; &#9671; &#128083;</span>
-    <span class="avatar">AK</span>
-  </div>
-  <div class="subheader"><span class="circle">&lsaquo;</span><h1>Asset Details</h1></div>
-
-  <div class="container">
-    <div class="left">
-      <div class="tabs">
-        <div class="tab active" onclick="showTab('general', this)">GENERAL INFORMATION</div>
-        <div class="tab" onclick="showTab('reconciliation', this)">TAX RECONCILIATION</div>
-        <div class="tab" onclick="showTab('lineitems', this)">INVOICE LINE ITEMS</div>
-        <div class="tab" onclick="showTab('changelog', this)">CHANGE LOG</div>
-        <div class="tab ai-tab" onclick="showTab('intel', this)">&#9889; INTELLIGENCE REPORT<span class="badge-new">NEW</span></div>
+<div class="shell"><span>&lsaquo;</span><span class="wz">Build Work Zone</span><span class="app-name">Agentic AI: USE Tax Validation and Reconciliation &#9662;</span><span class="spacer"></span><span class="icons">&#128269; &#128276; &#9671; &#128083;</span><span class="avatar">AK</span></div>
+<div class="subheader"><span class="circle">&lsaquo;</span><h1>Asset Details</h1></div>
+<div class="container">
+  <div class="left" id="detailsPanel">
+    <div class="tab-content">
+      <div class="ai-banner">&#9889; Three-layer extraction intelligence &mdash; SAP Document AI extracts (fast OCR baseline); Claude via SAP AI Core audits each field, corrects the risky ones, and validates against SAP asset master data; Claude Vision (beta) reads the invoice image directly for scanned documents. Per-field routing shows exactly which layer resolved each value.</div>
+      <div style="background:#fff4e5;border:1px solid #f0c674;color:#8a5a00;padding:8px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;line-height:1.5;">
+  &#9888;&#65039; <strong>POC data notice:</strong> Document AI extraction and the Claude intelligence audit are <strong style="color:#107e3e;">LIVE</strong>. Vertex jurisdiction tax, reconciliation amounts, and SAP asset/PO data are <strong style="color:#b25000;">MOCKED</strong> for demonstration &mdash; marked <span style="background:#ffe0b2;color:#8a5a00;padding:1px 6px;border-radius:3px;font-weight:700;">MOCK</span> where they appear.
+</div>
+      <div class="picker-box">
+        <div class="picker-header">
+          <strong>&#128194; Demo Invoices</strong>
+          <span id="pickerCount" class="picker-count">Loading…</span>
+        </div>
+        <div class="quick-picks">
+          <span style="font-size:11px;color:#888;margin-right:2px;">Jump to:</span>
+          <button class="qp-btn qp-ok" onclick="quickPickByScnid('8505960503')">&#10003; Clean match</button>
+          <button class="qp-btn qp-warn" onclick="quickPickByScnid('8505845443')">&#9888; Mismatch</button>
+          <button class="qp-btn qp-alt" onclick="quickPickByType('construction')">&#127959; Construction</button>
+          <button class="qp-btn qp-alt" onclick="quickPickByType('freight')">&#128666; Freight</button>
+        </div>
+        <label class="filter-toggle">
+          <input type="checkbox" id="assetFilter" checked onchange="applyAssetFilter()" />
+          Show only invoices with asset data
+          <span id="assetFilterNote" style="font-size:11px;color:#888;"></span>
+        </label>
+        <input type="text" id="pickerSearch" class="picker-search" placeholder="&#128269; Search by SCN ID or supplier name…" oninput="filterPicker()" />
+        <select id="pickerSelect" class="picker-select" size="6" onchange="pickInvoice(this.value)">
+          <option value="">Loading invoice list…</option>
+        </select>
+        <div class="picker-divider">&#9135;&#9135;&#9135; or upload your own below &#9135;&#9135;&#9135;</div>
       </div>
-      <div class="tab-content">
-        <div class="ai-banner">&#9889; Extraction Intelligence Layer &mdash; Document AI baseline, verified &amp; corrected by Claude (SAP AI Core). Every field audited against the source document.</div>
-        <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display:none" />
-          <p style="font-size:15px; font-weight:500;">&#128196; Drop invoice PDF to run the intelligence audit</p>
-          <p style="font-size:12px; color:#888; margin-top:4px;">or click to browse</p>
-        </div>
-        <div class="controls">
-          <button class="primary" id="processBtn" disabled onclick="processInvoice()">Run Intelligence Audit</button>
-          <span id="fileName" style="font-size:12px; color:#555;"></span>
-        </div>
-        <div id="statusBox"></div>
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display:none" />
+        <p style="font-size:15px;font-weight:500;">&#128196; Drop invoice PDF to run the intelligence audit</p>
+        <p style="font-size:12px;color:#888;margin-top:4px;">or click to browse</p>
+      </div>
+      <div class="tabs" style="margin:0 -18px 14px;">
+        <div class="tab active" onclick="showTab('general',this)">GENERAL INFORMATION</div>
+        <div class="tab" onclick="showTab('reconciliation',this)">TAX RECONCILIATION</div>
+        <div class="tab" onclick="showTab('lineitems',this)">INVOICE LINE ITEMS</div>
+        <div class="tab" onclick="showTab('changelog',this)">CHANGE LOG</div>
+        <div class="tab ai-tab" onclick="showTab('intel',this)">&#9889; INTELLIGENCE REPORT<span class="badge-new">NEW</span></div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="docaiBtn" disabled onclick="runDocAI()">1. Run Doc AI Extraction</button>
+        <button class="primary" id="claudeBtn" disabled onclick="runClaude()" style="background:#3452d1;">2. Send to Claude for Audit</button>
+        <button class="primary" id="visionBtn" disabled onclick="runVision()" style="background:#9d174d;">3. Audit with Claude Vision <span style="font-size:11px;font-weight:400;">(beta)</span></button>
+        <span id="fileName" style="font-size:12px;color:#555;"></span>
+        <span id="modeBadge"></span>
+      </div>
+      <div id="statusBox"></div>
+      <div class="card" id="fieldVerifCard" style="display:none;">
+        <div class="card-title">Three-Layer Field Comparison <span class="pill live">LIVE</span> <span id="genStat" style="font-size:11px;color:#888;margin-left:8px;font-weight:400;"></span></div>
+        <div id="genKv"><div class="placeholder">Run Doc AI extraction to populate the comparison table</div></div>
+      </div>
 
-        <div class="panel active" id="panel-general">
-          <div class="card">
-            <div class="card-title">General Information <span id="genStat"></span></div>
-            <div class="kv" id="genKv">
-              <div class="hdr">Field Name</div><div class="hdr">Doc AI Value</div><div class="hdr">AI-Verified Value</div>
-              <div class="placeholder" style="grid-column:1/4;">Upload an invoice to audit all header fields</div>
-            </div>
-          </div>
+      <div class="panel active" id="panel-general">
+        <div class="sec-title">GENERAL INFORMATION</div>
+        <div class="card" id="generalInfoCard" style="display:none;">
+          <div class="card-title">General Information <span class="pill live">LIVE</span> <span id="genInfoStat" style="font-size:11px;color:#888;margin-left:8px;"></span></div>
+          <div id="genInfoTable"></div>
         </div>
+      </div>
 
-        <div class="panel" id="panel-reconciliation">
-          <div class="card"><div class="card-title">Tax Reconciliation <span style="font-size:11px;color:#888;">(Vertex mocked &mdash; extraction feeds this)</span></div>
-            <div class="placeholder">Vertex jurisdiction tax reconciliation uses the AI-verified fields. Mocked here &mdash; extraction accuracy is the focus.</div>
-          </div>
-        </div>
+      <div class="panel" id="panel-reconciliation">
+        <div class="sec-title">TAX RECONCILIATION</div>
+        <div class="card"><div id="reconContent"><div class="placeholder">Upload an invoice to reconcile vendor tax vs Vertex tax</div></div></div>
+      </div>
 
-        <div class="panel" id="panel-lineitems">
-          <div class="card"><div class="card-title">Invoice Line Items <span style="font-size:11px;color:#107e3e;">CAPM-ready</span></div>
-            <div id="lineItemsContent"><div class="placeholder">Upload an invoice to see clean line items</div></div>
-          </div>
-        </div>
+      <div class="panel" id="panel-lineitems">
+        <div class="sec-title">INVOICE LINE ITEMS</div>
+        <div class="card"><div id="lineItemsContent"><div class="placeholder">Upload an invoice to see line items with freight and Vertex tax</div></div></div>
+      </div>
 
-        <div class="panel" id="panel-changelog">
-          <div class="card"><div class="card-title">Change Log</div>
-            <div class="placeholder">Field-level change history (production: @cap-js/change-tracking)</div>
-          </div>
-        </div>
+      <div class="panel" id="panel-changelog">
+        <div class="sec-title">CHANGE LOG <span class="pill live">LIVE</span></div>
+        <div class="card"><div id="changelogContent"><div class="placeholder">Field-level corrections made by the intelligence layer appear here</div></div></div>
+      </div>
 
-        <div class="panel" id="panel-intel">
-          <div id="intelContent">
-            <div class="hero-banner">
-              <h2>&#9889; Extraction Intelligence Report</h2>
-              <p>An engine-agnostic AI layer that verifies, corrects, and explains every extracted field &mdash; turning ~80% raw OCR into audit-ready data. Works over SAP Document AI today; the same intelligence wraps any extraction engine or document type.</p>
-            </div>
-            <div class="placeholder">Upload an invoice to generate the intelligence report</div>
-          </div>
+      <div class="panel" id="panel-intel">
+        <div id="intelContent">
+          <div class="hero-banner"><h2>&#9889; Extraction Intelligence Report</h2><p>An engine-agnostic AI layer that verifies, corrects, and explains every extracted field &mdash; turning ~80% raw OCR into audit-ready data.</p></div>
+          <div class="placeholder">Upload an invoice to generate the intelligence report</div>
         </div>
       </div>
     </div>
-    <div class="right">
-      <div class="pdf-bar">&#128196; Invoice Preview</div>
-      <div class="pdf-body" id="pdfBody"><div class="pdf-empty">Preview appears after upload</div></div>
-    </div>
   </div>
+  <div id="dragHandle"></div>
+  <div class="right" id="viewerPanel"><div class="pdf-bar">&#128196; Invoice Preview</div><div class="pdf-body" id="pdfBody"><div class="pdf-empty">Preview appears after upload</div></div></div>
+</div>
 
-  <script>
-    let fileBase64=null, fileMediaType=null, lastResult=null;
-    const dropZone=document.getElementById('dropZone'), fileInput=document.getElementById('fileInput'), processBtn=document.getElementById('processBtn');
-    fileInput.addEventListener('change', function(e){handleFile(e.target.files[0]);});
-    dropZone.addEventListener('dragover', function(e){e.preventDefault();});
-    dropZone.addEventListener('drop', function(e){e.preventDefault();handleFile(e.dataTransfer.files[0]);});
+<div id="ocrTooltip"></div>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="modal-head">Item Details</div><div id="modalBody"></div><div class="modal-foot"><span class="link" onclick="closeModal()">Close</span></div></div>
+</div>
 
-    function handleFile(file){
-      if(!file)return;
-      document.getElementById('fileName').textContent=file.name;
-      fileMediaType=file.type||'application/pdf';
-      dropZone.classList.add('active');
-      dropZone.querySelector('p').textContent='✅ '+file.name;
-      var url=URL.createObjectURL(file);
-      document.getElementById('pdfBody').innerHTML = fileMediaType==='application/pdf'
-        ? '<iframe src="'+url+'"></iframe>' : '<img src="'+url+'" />';
-      var reader=new FileReader();
-      reader.onload=function(){fileBase64=reader.result.split(',')[1];processBtn.disabled=false;};
-      reader.readAsDataURL(file);
-    }
-    function showTab(name, el){
-      document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-      document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-      el.classList.add('active');
-      document.getElementById('panel-'+name).classList.add('active');
-    }
-    function confDot(c){var cls=c>=90?'conf-high':c>=70?'conf-med':'conf-low';return '<span class="conf-dot '+cls+'" title="'+c+'%"></span>';}
-    function verdictPill(v){var m={VERIFIED:'verified',CORRECTED:'corrected',FLAGGED:'flagged'};return '<span class="pill '+(m[v]||'verified')+'">'+v+'</span>';}
+<script>
+var fileBase64=null, fileMediaType=null, uploadedFileName=null, uploadedFile=null, lastResult=null, docaiResult=null, claudeResult=null, visionResult=null, viewMode='docai', pendingHighlightField=null, docaiRan=false, claudeRan=false, visionRan=false, _renderedLineItems=[];
+var _statusDocAI=null, _statusClaude=null, _statusVision=null;
+var allInvoices=[], filterAssetOnly=true;
+var pdfDoc=null, pdfCurrentPage=1, pdfTotalPages=0, pdfViewport=null, ocrBoxes=[];
+var roi={annualVolume:25000,triggerRate:20,minutesSaved:8,hourlyRate:50,docAICost:0.02,claudeCost:0.015};
+var dropZone=document.getElementById('dropZone'), fileInput=document.getElementById('fileInput'), docaiBtn=document.getElementById('docaiBtn');
+fileInput.addEventListener('change',function(e){handleFile(e.target.files[0]);});
+dropZone.addEventListener('dragover',function(e){e.preventDefault();});
+dropZone.addEventListener('drop',function(e){e.preventDefault();handleFile(e.dataTransfer.files[0]);});
 
-    async function processInvoice(){
-      var statusBox=document.getElementById('statusBox');
-      processBtn.disabled=true;
-      statusBox.innerHTML='<div class="status-msg loading"><span class="spinner"></span>Running: PDF text extraction → Document AI → Claude whole-invoice audit...</div>';
+async function handleFile(file){
+  if(!file)return;
+  uploadedFile=file; uploadedFileName=file.name;
+  document.getElementById('fileName').textContent=file.name;
+  fileMediaType=file.type||'application/pdf';
+  dropZone.classList.add('active'); dropZone.querySelector('p').textContent='✅ '+file.name;
+  pdfDoc=null; pdfCurrentPage=1; ocrBoxes=[];
+  var pdfBody=document.getElementById('pdfBody');
+  pdfBody.innerHTML='<div id="pageNav" class="pdf-nav">Loading…</div>'
+    +'<div id="canvasWrap"><canvas id="pdfCanvas"></canvas>'
+    +'<canvas id="ocrLayer"></canvas></div>';
+  // Build base64 in chunks to avoid stack overflow on large PDFs
+  var buf=await file.arrayBuffer();
+  var u8=new Uint8Array(buf), b64='', CHUNK=0x8000;
+  for(var i=0;i<u8.length;i+=CHUNK) b64+=String.fromCharCode.apply(null,u8.subarray(i,i+CHUNK));
+  fileBase64=btoa(b64);
+  docaiBtn.disabled=false;
+  docaiResult=null; claudeResult=null; visionResult=null; lastResult=null;
+  docaiRan=false; claudeRan=false; visionRan=false;
+  _statusDocAI=null; _statusClaude=null; _statusVision=null;
+  document.getElementById('statusBox').innerHTML='';
+  document.getElementById('docaiBtn').textContent='1. Run Doc AI Extraction';
+  document.getElementById('claudeBtn').textContent='2. Send to Claude for Audit';
+  document.getElementById('visionBtn').innerHTML='3. Audit with Claude Vision <span style="font-size:11px;font-weight:400;">(beta)</span>';
+  document.getElementById('claudeBtn').disabled=true; document.getElementById('visionBtn').disabled=true;
+  if(fileMediaType==='application/pdf'){
+    var pdfLib=window['pdfjsLib'];
+    if(typeof pdfLib==='undefined'){
+      _showPdfFallback(fileBase64);
+    }else{
       try{
-        var response=await fetch('/api/intelligence/processInvoice',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({documentId:'UI-'+Date.now(),schemaType:'auto',invoiceBase64:fileBase64,mediaType:fileMediaType})
-        });
-        var text=await response.text();
-        var data;
-        try{var p=JSON.parse(text);data=typeof p.value==='string'?JSON.parse(p.value):(p.value||p);}catch(e){data=JSON.parse(text);}
-        lastResult=data;
-        var s=data.stats||{};
-        var modeLabel=(data.invoiceMode||'').replace('_',' ');
-        statusBox.innerHTML='<div class="status-msg done">✅ Audit complete in '+(data.processingTimeMs||'?')+'ms — '+(s.verified||0)+' verified, '+(s.corrected||0)+' corrected, '+(s.flagged||0)+' flagged <span class="pill verified" style="margin-left:10px;">Auto-classified: '+modeLabel+'</span></div>';
-        renderAll(data);
-      }catch(err){
-        statusBox.innerHTML='<div class="status-msg error">❌ '+err.message+'</div>';
+        pdfDoc=await pdfLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+        pdfTotalPages=pdfDoc.numPages; pdfCurrentPage=1;
+        await renderPdfPage(1);
+        wireOcrLayer();
+      }catch(e){
+        _showPdfFallback(fileBase64);
       }
-      processBtn.disabled=false;
     }
+  }else{
+    var url=URL.createObjectURL(file);
+    document.getElementById('canvasWrap').innerHTML='<img src="'+url+'" style="max-width:100%;" />';
+    document.getElementById('pageNav').style.display='none';
+  }
+}
+function _showPdfFallback(b64){
+  var wrap=document.getElementById('canvasWrap');
+  var nav=document.getElementById('pageNav');
+  if(nav)nav.style.display='none';
+  if(wrap)wrap.innerHTML='<embed src="data:application/pdf;base64,'+b64+'" type="application/pdf" style="width:100%;height:100%;min-height:600px;border:none;" />';
+}
+function showTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active'); document.getElementById('panel-'+name).classList.add('active');
+}
+function confDot(c){var cls=c>=90?'conf-high':c>=70?'conf-med':'conf-low';return '<span class="conf-dot '+cls+'" title="'+c+'%"></span>';}
+function verdictPill(v){var m={VERIFIED:'verified',CORRECTED:'corrected',FLAGGED:'flagged'};return '<span class="pill '+(m[v]||'verified')+'">'+v+'</span>';}
+function money(n){var x=parseFloat(n)||0;return x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function escHtml(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+function disagree(values){
+  var present=values
+    .filter(function(v){return v!==null&&v!==undefined&&String(v).trim()!=='';})
+    .map(function(v){return String(v).trim().toLowerCase().replace(/[\s,.$]/g,'');});
+  return (new Set(present)).size>1;
+}
 
-    function renderAll(data){ renderGeneral(data); renderLineItems(data); renderIntel(data); }
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
 
-    function renderGeneral(data){
-      var fields=data.fields||[];
-      var html='<div class="hdr">Field Name</div><div class="hdr">Doc AI Value</div><div class="hdr">AI-Verified Value</div>';
-      if(!fields.length){ html+='<div class="placeholder" style="grid-column:1/4;">No fields</div>'; }
-      fields.forEach(function(f){
-        var changed=f.verdict==='CORRECTED';
-        html+='<div class="k">'+f.fieldName+(f.taxCritical?' ⚠️':'')+'</div>';
-        html+='<div style="'+(changed?'color:#bb0000;':'')+'">'+(f.docAIValue||'—')+'</div>';
-        html+='<div>'+(f.correctValue||f.docAIValue||'—')+confDot(f.confidence||0)+' '+verdictPill(f.verdict)+'</div>';
-      });
-      document.getElementById('genKv').innerHTML=html;
-      var s=data.stats||{};
-      document.getElementById('genStat').innerHTML='<span style="font-size:11px;color:#888;">'+(s.verified||0)+' verified · '+(s.corrected||0)+' corrected · '+(s.flagged||0)+' flagged</span>';
+function _markButtonRun(btnId, labelHtml) {
+  var btn=document.getElementById(btnId);
+  if(!btn)return;
+  var fn={'docaiBtn':'reRunDocAI','claudeBtn':'reRunClaude','visionBtn':'reRunVision'}[btnId]||'';
+  btn.innerHTML=labelHtml+' &#10003; <span class="rerun-link" onclick="event.stopPropagation();'+fn+'()">Re-run</span>';
+}
+function _renderStatusAll(transient) {
+  var box=document.getElementById('statusBox'), html='';
+  if(_statusDocAI) html+='<div class="status-msg done">'+_statusDocAI+'</div>';
+  if(_statusClaude) html+='<div class="status-msg done">'+_statusClaude+'</div>';
+  if(_statusVision) html+='<div class="status-msg done">'+_statusVision+'</div>';
+  if(transient) html+=transient;
+  box.innerHTML=html;
+}
+function _showCached(layer, data) {
+  viewMode=layer; lastResult=data;
+  var label={'docai':'Doc AI','claude':'Claude','vision':'Vision'}[layer]||layer.toUpperCase();
+  _renderStatusAll('<div class="status-msg loading">Showing cached '+label+' result — click <em>Re-run</em> on the button to refresh from the service.</div>');
+  renderAll(data);
+}
+function reRunDocAI(){docaiRan=false;docaiResult=null;_statusDocAI=null;document.getElementById('docaiBtn').textContent='1. Run Doc AI Extraction';runDocAI();}
+function reRunClaude(){claudeRan=false;claudeResult=null;_statusClaude=null;document.getElementById('claudeBtn').textContent='2. Send to Claude for Audit';runClaude();}
+function reRunVision(){visionRan=false;visionResult=null;_statusVision=null;document.getElementById('visionBtn').innerHTML='3. Audit with Claude Vision <span style="font-size:11px;font-weight:400;">(beta)</span>';runVision();}
+
+async function runDocAI(){
+  if(docaiRan && docaiResult){ _showCached('docai', docaiResult); return; }
+  docaiBtn.disabled=true;
+  _renderStatusAll('<div class="status-msg loading"><span class="spinner"></span>Step 1: Running Doc AI extraction...</div>');
+  try{
+    var response=await fetch('/api/intelligence/extractDocAI',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({documentId:uploadedFileName||('UI-'+Date.now()),schemaType:'auto',invoiceBase64:fileBase64,mediaType:fileMediaType})});
+    var text=await response.text(); var data;
+    try{var p=JSON.parse(text);data=typeof p.value==='string'?JSON.parse(p.value):(p.value||p);}catch(e){data=JSON.parse(text);}
+    docaiResult=data; lastResult=data; docaiRan=true;
+    var mode=data.invoiceMode||'non_construction';
+    document.getElementById('modeBadge').innerHTML='<span class="pill '+(mode==='construction'?'construction':'noncon')+'">Auto-classified: '+(mode==='construction'?'CONSTRUCTION':'NON-CONSTRUCTION')+'</span>';
+    _statusDocAI='✅ Doc AI extraction complete — '+(data.fields||[]).length+' fields extracted';
+    _renderStatusAll();
+    document.getElementById('claudeBtn').disabled=false;
+    document.getElementById('visionBtn').disabled=false;
+    _markButtonRun('docaiBtn','1. Run Doc AI Extraction');
+    viewMode='docai';
+    renderAll(data);
+  }catch(err){ _renderStatusAll('<div class="status-msg error">❌ '+err.message+'</div>'); }
+  docaiBtn.disabled=false;
+}
+
+async function runClaude(){
+  if(claudeRan && claudeResult){ _showCached('claude', claudeResult); return; }
+  document.getElementById('claudeBtn').disabled=true;
+  _renderStatusAll('<div class="status-msg loading"><span class="spinner"></span>Step 2: Sending to Claude for full audit...</div>');
+  try{
+    var response=await fetch('/api/intelligence/processInvoice',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({documentId:uploadedFileName||('UI-'+Date.now()),docAIResult:JSON.stringify(docaiResult)})});
+    var text=await response.text(); var data;
+    try{var p=JSON.parse(text);data=typeof p.value==='string'?JSON.parse(p.value):(p.value||p);}catch(e){data=JSON.parse(text);}
+    claudeResult=data; lastResult=data; claudeRan=true; var s=data.stats||{};
+    var mode=data.invoiceMode||'non_construction';
+    document.getElementById('modeBadge').innerHTML='<span class="pill '+(mode==='construction'?'construction':'noncon')+'">Auto-classified: '+(mode==='construction'?'CONSTRUCTION':'NON-CONSTRUCTION')+'</span>';
+    _statusClaude='✅ Claude audit complete in '+(data.processingTimeMs||'?')+'ms — '+(s.verified||0)+' verified, '+(s.corrected||0)+' corrected, '+(s.flagged||0)+' flagged';
+    _renderStatusAll();
+    _markButtonRun('claudeBtn','2. Send to Claude for Audit');
+    viewMode='claude';
+    renderAll(data);
+    if(pendingHighlightField){
+      var fn=pendingHighlightField; pendingHighlightField=null;
+      setTimeout(function(){var row=document.querySelector('.kv-field-row[data-field="'+fn+'"]');if(row){row.scrollIntoView({behavior:'smooth',block:'center'});row.style.transition='background 0.4s';row.style.background='#fffde7';setTimeout(function(){row.style.background='';row.style.transition='';},1800);}},200);
     }
+  }catch(err){ _renderStatusAll('<div class="status-msg error">❌ '+err.message+'</div>'); }
+  document.getElementById('claudeBtn').disabled=false;
+}
 
-    function renderLineItems(data){
-      var items=data.lineItems||[];
-      if(!items.length){document.getElementById('lineItemsContent').innerHTML='<div class="placeholder">No line items</div>';return;}
-      var html='<table><tr><th>#</th><th>Description</th><th>Amount</th><th>Status</th></tr>';
-      items.forEach(function(li,i){
-        var pill=li.status==='FREIGHT'?'<span class="pill freight">FREIGHT</span>':'<span class="pill keep">KEEP</span>';
-        html+='<tr><td>'+(i+1)+'</td><td>'+(li.description||'—')+'</td><td style="font-family:monospace;">$'+(li.netPrice||'0')+'</td><td>'+pill+'</td></tr>';
+function auditField(fieldName){if(!fileBase64)return;pendingHighlightField=fieldName;runClaude();}
+
+async function renderPdfToPng(file){
+  if(!file)throw new Error('No file uploaded');
+  var ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='png'||ext==='jpg'||ext==='jpeg') return [fileBase64]; // single-element array for images
+  var pdfLib=window['pdfjsLib'];
+  if(typeof pdfLib==='undefined') throw new Error('pdf.js not available — cannot render page image');
+  var doc=pdfDoc;
+  if(!doc){
+    var buf=await file.arrayBuffer();
+    doc=await pdfLib.getDocument({data:new Uint8Array(buf)}).promise;
+  }
+  var maxPages=Math.min(doc.numPages,5);
+  var images=[];
+  for(var n=1;n<=maxPages;n++){
+    var page=await doc.getPage(n);
+    var vp=page.getViewport({scale:2.0});
+    var canvas=document.createElement('canvas');
+    canvas.width=vp.width; canvas.height=vp.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+    images.push(canvas.toDataURL('image/png').split(',')[1]);
+  }
+  return images; // array of base64 strings, one per page
+}
+
+// ── PDF canvas renderer + OCR overlay ────────────────────────────────────────
+async function renderPdfPage(n){
+  if(!pdfDoc)return;
+  var page=await pdfDoc.getPage(n);
+  var wrap=document.getElementById('canvasWrap');
+  var panelW=wrap?(wrap.offsetWidth-2)||700:700;
+  var vp1=page.getViewport({scale:1});
+  var scale=Math.min(2.0,Math.max(1.0,panelW/vp1.width));
+  var vp=page.getViewport({scale:scale});
+  pdfViewport=vp;
+  var canvas=document.getElementById('pdfCanvas');
+  var ocr=document.getElementById('ocrLayer');
+  if(!canvas||!ocr)return;
+  canvas.width=vp.width; canvas.height=vp.height;
+  ocr.width=vp.width; ocr.height=vp.height;
+  await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+  drawOcrBoxes(n);
+  updatePageNav();
+}
+
+function wireOcrLayer(){
+  var ocr=document.getElementById('ocrLayer');
+  if(!ocr)return;
+  var tip=document.getElementById('ocrTooltip');
+  ocr.addEventListener('mousemove',function(e){
+    var r=ocr.getBoundingClientRect();
+    var sx=ocr.width/r.width, sy=ocr.height/r.height;
+    var mx=(e.clientX-r.left)*sx, my=(e.clientY-r.top)*sy;
+    var hit=null;
+    for(var i=ocrBoxes.length-1;i>=0;i--){
+      var b=ocrBoxes[i];
+      if(mx>=b.rect.x&&mx<=b.rect.x+b.rect.w&&my>=b.rect.y&&my<=b.rect.y+b.rect.h){hit=b;break;}
+    }
+    if(hit){
+      tip.style.display='block';
+      tip.style.left=(e.clientX+16)+'px'; tip.style.top=(e.clientY-8)+'px';
+      tip.innerHTML='<strong>'+hit.fieldName+'</strong><br>'+(hit.correctValue||hit.docAIValue||'')
+        +(hit.verdict?'<br><span style="opacity:.65;font-size:10px;">'+hit.verdict+(hit.taxCritical?' · tax-critical':'')+'</span>':'');
+      ocr.style.cursor='crosshair';
+      document.querySelectorAll('.kv-field-row').forEach(function(r){r.style.background='';});
+      var row=document.querySelector('.kv-field-row[data-field="'+hit.fieldName+'"]');
+      if(row){row.style.background='#fffbeb';row.scrollIntoViewIfNeeded&&row.scrollIntoViewIfNeeded(false);}
+    }else{
+      tip.style.display='none'; ocr.style.cursor='default';
+      document.querySelectorAll('.kv-field-row').forEach(function(r){r.style.background='';});
+    }
+  });
+  ocr.addEventListener('mouseleave',function(){
+    if(tip)tip.style.display='none';
+    document.querySelectorAll('.kv-field-row').forEach(function(r){r.style.background='';});
+  });
+}
+
+function drawOcrBoxes(pageNum){
+  var ocr=document.getElementById('ocrLayer');
+  if(!ocr)return;
+  var ctx=ocr.getContext('2d');
+  ctx.clearRect(0,0,ocr.width,ocr.height);
+  ocrBoxes=[];
+  var result=viewMode==='docai'?docaiResult:viewMode==='claude'?claudeResult:viewMode==='vision'?visionResult:lastResult;
+  if(!result||!result.fields)return;
+  result.fields.forEach(function(f){
+    var bb=f.boundingBox;
+    if(!bb)return;
+    if((f.page||1)!==pageNum)return;
+    var x,y,w,h;
+    if(Array.isArray(bb)){
+      var xs=bb.map(function(v){return v.x;}),ys=bb.map(function(v){return v.y;});
+      x=Math.min.apply(null,xs);y=Math.min.apply(null,ys);
+      w=Math.max.apply(null,xs)-x;h=Math.max.apply(null,ys)-y;
+    }else{x=bb.x||0;y=bb.y||0;w=bb.w||0;h=bb.h||0;}
+    // Coords from SAP DOX are normalized 0-1
+    var cx=x*ocr.width,cy=y*ocr.height,cw=w*ocr.width,ch=h*ocr.height;
+    if(cw<4||ch<2)return;
+    var color;
+    if(f.verdict==='CORRECTED') color='#df6e0c';
+    else if(f.verdict==='FLAGGED') color='#bb0000';
+    else if(f.taxCritical) color='#0a6ed1';
+    else if(!f.verdict){
+      // Doc AI only — shade by confidence
+      var conf=f.confidence||0;
+      color=f.taxCritical&&conf<85?'#df6e0c':f.taxCritical?'#0a6ed1':'#107e3e';
+    }else color='#107e3e';
+    ctx.strokeStyle=color; ctx.lineWidth=1.5;
+    ctx.globalAlpha=0.85; ctx.strokeRect(cx,cy,cw,ch);
+    ctx.globalAlpha=0.08; ctx.fillStyle=color; ctx.fillRect(cx,cy,cw,ch);
+    ctx.globalAlpha=1;
+    ocrBoxes.push({fieldName:f.fieldName,docAIValue:f.docAIValue||'',correctValue:f.correctValue||'',
+      verdict:f.verdict||null,taxCritical:!!f.taxCritical,rect:{x:cx,y:cy,w:cw,h:ch},color});
+  });
+}
+
+function hoverField(fieldName){
+  var ocr=document.getElementById('ocrLayer');
+  if(!ocr||!ocrBoxes.length)return;
+  var ctx=ocr.getContext('2d');
+  ctx.clearRect(0,0,ocr.width,ocr.height);
+  ocrBoxes.forEach(function(b){
+    var hi=fieldName&&b.fieldName===fieldName;
+    ctx.strokeStyle=b.color; ctx.lineWidth=hi?2.5:1;
+    ctx.globalAlpha=hi?1:fieldName?0.18:0.85; ctx.strokeRect(b.rect.x,b.rect.y,b.rect.w,b.rect.h);
+    ctx.globalAlpha=hi?0.18:fieldName?0.02:0.08; ctx.fillStyle=b.color; ctx.fillRect(b.rect.x,b.rect.y,b.rect.w,b.rect.h);
+    ctx.globalAlpha=1;
+  });
+}
+
+function prevPage(){if(pdfDoc&&pdfCurrentPage>1){pdfCurrentPage--;renderPdfPage(pdfCurrentPage);}}
+function nextPage(){if(pdfDoc&&pdfCurrentPage<pdfTotalPages){pdfCurrentPage++;renderPdfPage(pdfCurrentPage);}}
+function updatePageNav(){
+  var el=document.getElementById('pageNav');
+  if(!el)return;
+  el.innerHTML='<button onclick="prevPage()" '+(pdfCurrentPage<=1?'disabled':'')+'>&#8249; Prev</button>'
+    +'<span>Page '+pdfCurrentPage+' of '+pdfTotalPages+'</span>'
+    +'<button onclick="nextPage()" '+(pdfCurrentPage>=pdfTotalPages?'disabled':'')+'>Next &#8250;</button>';
+}
+
+async function runVision(){
+  if(visionRan && visionResult){ _showCached('vision', visionResult); return; }
+  var btn=document.getElementById('visionBtn');
+  btn.disabled=true;
+  _renderStatusAll('<div class="status-msg loading"><span class="spinner"></span>Rendering invoice page to image…</div>');
+  try{
+    var imgPages=await renderPdfToPng(uploadedFile);
+    _renderStatusAll('<div class="status-msg loading"><span class="spinner"></span>Running Claude Vision — sending '+imgPages.length+' page(s) to multimodal AI…</div>');
+    var response=await fetch('/api/intelligence/auditWithVision',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({documentId:uploadedFileName||('UI-'+Date.now()),imageBase64:imgPages[0],imagePages:imgPages,docAIResult:JSON.stringify(claudeResult||docaiResult||null)})});
+    var text=await response.text(); var data;
+    try{var p=JSON.parse(text);data=typeof p.value==='string'?JSON.parse(p.value):(p.value||p);}catch(e){data=JSON.parse(text);}
+    console.log('[VISION_FRONT] raw text (first 500):', text.substring(0,500));
+    console.log('[VISION_FRONT] data.stats:', JSON.stringify(data ? data.stats : 'NO DATA'));
+    console.log('[VISION_FRONT] data.fields?.length:', data ? (data.fields ? data.fields.length : 'no fields key') : 'NO DATA');
+    console.log('[VISION_FRONT] data.lineItems?.length:', data ? (data.lineItems ? data.lineItems.length : 'no lineItems key') : 'NO DATA');
+    console.log('[VISION_FRONT] data.processingTimeMs:', data ? data.processingTimeMs : 'NO DATA');
+    visionResult=data; lastResult=data; visionRan=true; var s=data.stats||{};
+    _statusVision='✅ Claude Vision audit complete in '+(data.processingTimeMs||'?')+'ms — '+(s.verified||0)+' verified, '+(s.corrected||0)+' corrected, '+(s.flagged||0)+' flagged';
+    _renderStatusAll();
+    _markButtonRun('visionBtn','3. Audit with Claude Vision <span style="font-size:11px;font-weight:400;">(beta)</span>');
+    viewMode='vision';
+    renderAll(data);
+  }catch(err){
+    _renderStatusAll('<div class="status-msg error">❌ Vision: '+err.message+'</div>');
+  }
+  btn.disabled=false;
+}
+
+function setView(mode){
+  // Kept for OCR overlay updates only — no toggle buttons remain
+  if(mode==='docai'&&!docaiResult)return;
+  if(mode==='claude'&&!claudeResult)return;
+  if(mode==='vision'&&!visionResult)return;
+  viewMode=mode; drawOcrBoxes(pdfCurrentPage);
+}
+
+function renderAll(data){ renderGeneral(data); renderRecon(data); renderLineItems(data); renderChangelog(data); renderIntel(data); drawOcrBoxes(pdfCurrentPage); }
+
+function renderGeneral(data){
+  // ── General Information (asset comparison) ─────────────────────
+  var gi=data.generalInfo||[];
+  var giCard=document.getElementById('generalInfoCard');
+  var giTable=document.getElementById('genInfoTable');
+  var statEl=document.getElementById('genInfoStat');
+
+  if(!Array.isArray(gi)||!gi.length){
+    if(giCard) giCard.style.display='none';
+  } else {
+    if(giCard) giCard.style.display='';
+    var hasAsset=gi.some(function(r){return r.assetReportValue!=null;});
+    var matchCount=gi.filter(function(r){return r.match===true;}).length;
+    var mismatches=gi.filter(function(r){return r.match===false;}).length;
+    if(!hasAsset){
+      var scnRow=gi.find(function(r){return r.field==='SCNID';});
+      if(giTable) giTable.innerHTML='<div style="padding:14px;color:#888;font-size:13px;">No asset report data found for SCN '+((scnRow&&scnRow.invoiceValue)||'—')+'</div>';
+      if(statEl) statEl.innerHTML='';
+    } else {
+      var th='<th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d0d0d0;font-weight:600;color:#444;background:#f0f2f5;">';
+      var html='<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+      html+='<tr>'+th+'Field Name</th>'+th+'Asset Report Data</th>'+th+'Invoice Data</th>';
+      html+='<th style="text-align:center;padding:8px 12px;border-bottom:2px solid #d0d0d0;font-weight:600;color:#444;background:#f0f2f5;width:130px;">Match</th></tr>';
+      gi.forEach(function(r){
+        var isMismatch=r.match===false;
+        var rowBg=isMismatch?'background:#fdf0f0;':'';
+        var matchPill;
+        if(r.match===true) matchPill='<span style="display:inline-block;background:#e6f4ea;color:#1a7f37;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">&#10003; MATCH</span>';
+        else if(r.match===false) matchPill='<span style="display:inline-block;background:#fde8e8;color:#cc0000;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">&#10007; MISMATCH</span>';
+        else matchPill='<span style="color:#ccc;font-size:15px;line-height:1;">—</span>';
+        if(r.type==='shipTo'){
+          var assetLines=[];
+          if(r.assetAddress) assetLines.push(escHtml(r.assetAddress));
+          var assetCityLine=[r.assetCity,r.assetState,r.assetPostal].filter(Boolean).map(escHtml).join(', ');
+          if(assetCityLine) assetLines.push(assetCityLine);
+          var invLines=[];
+          if(r.invoiceAddress) invLines.push(escHtml(r.invoiceAddress));
+          var invCityLine=[r.invoiceCity,r.invoiceState,r.invoicePostalCode].filter(Boolean).map(escHtml).join(', ');
+          if(invCityLine) invLines.push(invCityLine);
+          var captionHtml=r.caption?'<div style="font-size:11px;color:#555;margin-top:6px;font-style:italic;">'+escHtml(r.caption)+'</div>':'';
+          var noteHtml=r.note?'<div style="font-size:11px;color:#b25000;margin-top:5px;background:#fff3e0;padding:4px 8px;border-radius:4px;line-height:1.4;">&#9888; '+escHtml(r.note)+'</div>':'';
+          html+='<tr style="border-bottom:1px solid #ebebeb;'+rowBg+'">';
+          html+='<td style="padding:8px 12px;font-weight:500;color:#333;vertical-align:top;white-space:nowrap;">Ship-to Location</td>';
+          html+='<td style="padding:8px 12px;color:#555;vertical-align:top;">'+(assetLines.length?assetLines.join('<br>'):'<span style="color:#aaa;">—</span>')+'</td>';
+          html+='<td style="padding:8px 12px;color:#222;vertical-align:top;">'+(invLines.length?invLines.join('<br>'):'<span style="color:#aaa;">—</span>')+captionHtml+noteHtml+'</td>';
+          html+='<td style="padding:8px 12px;text-align:center;vertical-align:top;">'+matchPill+'</td>';
+          html+='</tr>';
+        } else {
+          html+='<tr style="border-bottom:1px solid #ebebeb;'+rowBg+'">';
+          html+='<td style="padding:8px 12px;font-weight:500;color:#333;white-space:nowrap;">'+r.field+'</td>';
+          html+='<td style="padding:8px 12px;color:#555;">'+(r.assetReportValue!=null?r.assetReportValue:'')+'</td>';
+          html+='<td style="padding:8px 12px;color:#222;">'+(r.invoiceValue!=null?r.invoiceValue:'')+'</td>';
+          html+='<td style="padding:8px 12px;text-align:center;">'+matchPill+'</td>';
+          html+='</tr>';
+        }
       });
       html+='</table>';
-      if(data.freightTotal) html+='<div style="padding:12px 14px;font-size:12px;color:#3452d1;">Freight to distribute: $'+data.freightTotal+'</div>';
-      document.getElementById('lineItemsContent').innerHTML=html;
+      if(giTable) giTable.innerHTML=html;
+      if(statEl){var s=matchCount+' matched';s+=mismatches?' · <span style="color:#cc0000;font-weight:600;">'+mismatches+' mismatch</span>':' · 0 mismatches';statEl.innerHTML=s;}
+    }
+  }
+
+  // ── Three-Layer Field Comparison ───────────────────────────────
+  var fvCard=document.getElementById('fieldVerifCard');
+  var genKv=document.getElementById('genKv');
+  var genStat=document.getElementById('genStat');
+  if(!fvCard||!genKv)return;
+
+  // Build union of field names across all layers that have run
+  var allNames=[], seen={};
+  [docaiResult,claudeResult,visionResult].forEach(function(r){
+    if(!r||!r.fields)return;
+    r.fields.forEach(function(f){if(!seen[f.fieldName]){seen[f.fieldName]=1;allNames.push(f.fieldName);}});
+  });
+  if(!allNames.length){fvCard.style.display='none';return;}
+  fvCard.style.display='';
+
+  var d_run=!!docaiResult, c_run=!!claudeResult, v_run=!!visionResult;
+  var dot=function(run){return run
+    ?'<span style="display:block;color:#107e3e;font-size:10px;font-weight:400;margin-top:2px;">&#9679; run</span>'
+    :'<span style="display:block;color:#bbb;font-size:10px;font-weight:400;margin-top:2px;">&#9675; not run</span>';};
+  var TH='padding:8px 10px;background:#f0f2f5;border-bottom:2px solid #d0d0d0;color:#444;font-weight:600;font-size:12px;text-align:left;vertical-align:bottom;';
+
+  var html='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<thead><tr>'
+    +'<th style="'+TH+'width:148px;">Field Name</th>'
+    +'<th style="'+TH+'">Doc AI'+dot(d_run)+'</th>'
+    +'<th style="'+TH+'">+ Claude'+dot(c_run)+'</th>'
+    +'<th style="'+TH+'">Vision'+dot(v_run)+'</th>'
+    +'<th style="'+TH+'width:180px;">Best Value</th>'
+    +'</tr></thead><tbody>';
+
+  allNames.forEach(function(name){
+    var df=docaiResult&&docaiResult.fields?docaiResult.fields.find(function(f){return f.fieldName===name;}):null;
+    var cf=claudeResult&&claudeResult.fields?claudeResult.fields.find(function(f){return f.fieldName===name;}):null;
+    var vf=visionResult&&visionResult.fields?visionResult.fields.find(function(f){return f.fieldName===name;}):null;
+    var dv=df?(df.docAIValue||''):null;
+    var cv=cf?(cf.correctValue||cf.docAIValue||''):null;
+    var vv=vf?(vf.correctValue||vf.docAIValue||''):null;
+    var taxCrit=!!(df&&df.taxCritical)||(cf&&cf.taxCritical)||(vf&&vf.taxCritical);
+
+    var rowDisagrees=disagree([d_run?dv:null,c_run?cv:null,v_run?vv:null]);
+
+    // Best value: Doc AI is primary — wins all ties. Another layer only wins when it genuinely changed/filled the value.
+    var bestVal='', bestLayer='';
+    var dvN=dv?dv.trim().toLowerCase():'', cvN=cv?cv.trim().toLowerCase():'', vvN=vv?vv.trim().toLowerCase():'';
+    if(dvN){
+      // Doc AI has a value: wins unless a later layer explicitly changed it
+      if(v_run&&vvN&&vvN!==dvN){bestVal=vv;bestLayer='vision';}
+      else if(c_run&&cvN&&cvN!==dvN){bestVal=cv;bestLayer='claude';}
+      else{bestVal=dv;bestLayer='docai';}
+    } else if(cvN){
+      // Doc AI blank — Claude filled it; Vision wins only if it changed Claude's value
+      if(v_run&&vvN&&vvN!==cvN){bestVal=vv;bestLayer='vision';}
+      else{bestVal=cv;bestLayer='claude';}
+    } else if(vvN){
+      // Both blank — Vision is the only source
+      bestVal=vv;bestLayer='vision';
     }
 
-    function renderIntel(data){
-      var fields=data.fields||[], s=data.stats||{}, checks=data.consistencyChecks||[], lic=data.lineItemCorrections||[];
-      var html='<div class="hero-banner"><h2>⚡ Extraction Intelligence Report</h2><p>An engine-agnostic AI layer that verifies, corrects, and explains every extracted field — turning ~80% raw OCR into audit-ready data. Works over SAP Document AI today; the same intelligence wraps any extraction engine or document type.</p></div>';
+    // Doc AI cell: value + confidence colouring
+    var conf=df?(df.confidence||0):0;
+    var confSpan=conf>0?(' <span style="font-size:10px;color:'+(conf>=85?'#107e3e':'#df6e0c')+';margin-left:3px;">'+(conf<85?'⚠ ':'')+conf+'%</span>'):'';
+    var dCell=!d_run?'<span style="color:#ddd;font-size:11px;">—</span>'
+      :dv?escHtml(dv)+confSpan:'<span style="color:#aaa;">—</span>';
 
-      html+='<div class="card"><div class="metric-row">';
-      html+='<div class="metric"><div class="v">'+(s.total||0)+'</div><div class="l">Fields Audited</div></div>';
-      html+='<div class="metric"><div class="v" style="color:#107e3e;">'+(s.verified||0)+'</div><div class="l">Verified</div></div>';
-      html+='<div class="metric"><div class="v" style="color:#df6e0c;">'+(s.corrected||0)+'</div><div class="l">Corrected by AI</div></div>';
-      html+='<div class="metric"><div class="v" style="color:#bb0000;">'+(s.flagged||0)+'</div><div class="l">Flagged for Review</div></div>';
+    // Claude cell: ✓ same / ✎ corrected
+    var cChanged=c_run&&cv!==null&&dv!==null&&cv.trim()!==dv.trim();
+    var cCell;
+    if(!c_run)cCell='<span style="color:#ddd;font-size:11px;">—</span>';
+    else if(!cv)cCell='<span style="color:#aaa;">—</span>';
+    else if(cChanged)cCell='<strong style="color:#a35a00;">'+escHtml(cv)+'</strong>'
+      +(cf&&cf.reason?'<div style="font-size:10px;color:#a35a00;opacity:.8;margin-top:2px;">&#10002; '+escHtml(cf.reason)+'</div>':'<span style="color:#a35a00;margin-left:3px;font-size:11px;">&#10002;</span>');
+    else cCell='<span style="color:#107e3e;font-size:13px;">&#10003;</span> <span style="color:#555;">'+escHtml(cv)+'</span>';
+
+    // Vision cell
+    var vChanged=v_run&&vv!==null&&dv!==null&&vv.trim()!==dv.trim();
+    var vCell;
+    if(!v_run)vCell='<span style="color:#ddd;font-size:11px;">—</span>';
+    else if(!vv)vCell='<span style="color:#aaa;">—</span>';
+    else if(vChanged)vCell='<strong style="color:#9d174d;">'+escHtml(vv)+'</strong><span style="color:#9d174d;margin-left:3px;font-size:11px;">&#10002;</span>';
+    else vCell='<span style="color:#107e3e;font-size:13px;">&#10003;</span> <span style="color:#555;">'+escHtml(vv)+'</span>';
+
+    // Best value badge — ✓ on Doc AI when another layer explicitly confirmed it
+    var badge='';
+    var docaiConfirmed=bestLayer==='docai'&&dvN!==''&&((c_run&&cvN===dvN)||(v_run&&vvN===dvN));
+    if(bestLayer==='docai')badge='<span style="display:inline-block;background:#e5e7eb;color:#374151;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Doc AI'+(docaiConfirmed?' ✓':'')+'</span>';
+    else if(bestLayer==='claude')badge='<span style="display:inline-block;background:#dbeafe;color:#1d4ed8;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Claude</span>';
+    else if(bestLayer==='vision')badge='<span style="display:inline-block;background:#fce7f3;color:#9d174d;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Vision</span>';
+    var bestCell=bestVal?'<strong>'+escHtml(bestVal)+'</strong>'+badge:'<span style="color:#aaa;">—</span>';
+
+    var rowBg=rowDisagrees?'background:#fffbeb;':'';
+    var tcBorder=taxCrit?'border-left:3px solid #0a6ed1;':'border-left:3px solid transparent;';
+    html+='<tr class="kv-field-row" data-field="'+name+'" onmouseenter="hoverField(\''+name+'\')" onmouseleave="hoverField(null)"'
+      +' style="border-bottom:1px solid #f0f0f0;'+rowBg+tcBorder+'">';
+    html+='<td style="padding:7px 10px;font-weight:500;color:#333;font-size:12px;">'
+      +(taxCrit?'<span title="Tax-critical" style="color:#0a6ed1;font-size:9px;vertical-align:middle;">&#9670; </span>':'')+escHtml(name)+'</td>';
+    html+='<td style="padding:7px 10px;color:#444;line-height:1.4;">'+dCell+'</td>';
+    html+='<td style="padding:7px 10px;line-height:1.4;">'+cCell+'</td>';
+    html+='<td style="padding:7px 10px;line-height:1.4;">'+vCell+'</td>';
+    html+='<td style="padding:7px 10px;line-height:1.4;">'+bestCell+'</td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+
+  // Summary stat
+  if(genStat){
+    var parts=[];
+    if(d_run)parts.push(allNames.length+' fields');
+    if(c_run){var nc=(claudeResult.fields||[]).filter(function(f){return f.verdict==='CORRECTED';}).length;if(nc)parts.push('<span style="color:#a35a00;">'+nc+' Claude-corrected</span>');}
+    if(v_run){var nv=(visionResult.fields||[]).filter(function(f){
+      var df2=docaiResult&&docaiResult.fields&&docaiResult.fields.find(function(x){return x.fieldName===f.fieldName;});
+      return df2&&(f.correctValue||'').trim()!==(df2.docAIValue||'').trim();
+    }).length;if(nv)parts.push('<span style="color:#9d174d;">'+nv+' Vision-differs</span>');}
+    if(d_run&&(c_run||v_run)){var ndis=allNames.filter(function(n){
+      var _df=docaiResult&&docaiResult.fields&&docaiResult.fields.find(function(x){return x.fieldName===n;});
+      var _cf=claudeResult&&claudeResult.fields&&claudeResult.fields.find(function(x){return x.fieldName===n;});
+      var _vf=visionResult&&visionResult.fields&&visionResult.fields.find(function(x){return x.fieldName===n;});
+      return disagree([d_run&&_df?(_df.docAIValue||''):null,c_run&&_cf?(_cf.correctValue||_cf.docAIValue||''):null,v_run&&_vf?(_vf.correctValue||_vf.docAIValue||''):null]);
+    }).length;if(ndis)parts.push('<span style="color:#b25000;">'+ndis+' rows with disagreement</span>');}
+    genStat.innerHTML=parts.join(' &nbsp;·&nbsp; ');
+  }
+  genKv.innerHTML=html;
+}
+
+function renderRecon(data){
+  var r=data.reconciliation;
+  var vendorTax=data.vendorTaxAmount!=null?parseFloat(data.vendorTaxAmount):null;
+  if(!r && vendorTax==null){document.getElementById('reconContent').innerHTML='<div class="placeholder">No reconciliation data</div>';return;}
+  var naV='<span style="color:#aaa;font-style:italic;">N/A — requires Vertex</span>';
+  var pendV='<span style="color:#aaa;font-style:italic;">Pending — requires Vertex</span>';
+  // Derive tax rate from vendorTax / net if not provided by Claude
+  var invoiceTaxRate = r && r.invoiceTaxRate!=null ? r.invoiceTaxRate : null;
+  if(invoiceTaxRate==null && vendorTax!=null && data.invoiceNetTotal){
+    var net=parseFloat(data.invoiceNetTotal)||0;
+    if(net>0) invoiceTaxRate=+(vendorTax/net*100).toFixed(2);
+  }
+  var html='<div style="padding:10px 14px;background:#fffbeb;border-bottom:1px solid #fde68a;font-size:12px;color:#78350f;">'
+    +'Invoice-side tax is extracted live; Vertex-side reconciliation activates when the Vertex integration is connected.'
+    +'</div>';
+  html+='<table>';
+  html+='<tr><th>Field</th><th>Value</th></tr>';
+  html+='<tr><td>Invoice Tax Rate</td><td class="num">'+(invoiceTaxRate!=null?invoiceTaxRate+'%':naV)+'</td></tr>';
+  html+='<tr><td>Invoice Tax Amount</td><td class="num">'+(vendorTax!=null?'$'+money(vendorTax):'<span style="color:#999;font-style:italic;">not on invoice</span>')+'</td></tr>';
+  html+='<tr><td>Vertex Tax Rate</td><td class="num">'+naV+'</td></tr>';
+  html+='<tr><td>Total Vertex Tax Amount</td><td class="num">'+naV+'</td></tr>';
+  html+='<tr><td>Tax Rate Difference</td><td class="num">'+naV+'</td></tr>';
+  html+='<tr><td>Tax Amount Difference</td><td class="num">'+naV+'</td></tr>';
+  html+='<tr><td>Taxability Status</td><td>'+pendV+'</td></tr>';
+  html+='<tr><td>Tax Chargeability Status</td><td>'+pendV+'</td></tr>';
+  html+='</table>';
+  document.getElementById('reconContent').innerHTML=html;
+}
+
+function lineVerdictPill(v){
+  var m={VERIFIED:'verified',CORRECTED:'corrected',FLAGGED:'flagged',SUPPRESSED:'flagged'};
+  return '<span class="pill '+(m[v]||'verified')+'" style="font-size:10px;padding:2px 7px;">'+v+'</span>';
+}
+
+function renderLineItems(data){
+  var mode=(data&&data.invoiceMode)||(docaiResult&&docaiResult.invoiceMode)||'non_construction';
+  var daLines  = docaiRan  ? ((docaiResult&&docaiResult.lineItems)||[])  : [];
+  var clLines  = claudeRan ? ((claudeResult&&claudeResult.lineItems)||[]) : [];
+  var vsLines  = visionRan ? ((visionResult&&visionResult.lineItems)||[]) : [];
+  if(!daLines.length&&!clLines.length&&!vsLines.length){
+    document.getElementById('lineItemsContent').innerHTML='<div class="placeholder">No line items extracted</div>';return;}
+
+  // Raw amount: netAmount (pre-freight) > amount > itemAmount
+  var rawAmt=function(li){return li?parseFloat(li.netAmount!=null?li.netAmount:li.amount!=null?li.amount:li.itemAmount)||0:null;};
+  var normD=function(s){return String(s||'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();};
+  var amtClose=function(a,b){return a!=null&&b!=null&&Math.abs(a-b)<0.02;};
+
+  // Match base line against a candidate list; returns matched index or null
+  var findMatch=function(base,cands,used){
+    var bd=normD(base.description),ba=rawAmt(base);
+    var best=null,bestS=99;
+    cands.forEach(function(c,i){
+      if(used.has(i))return;
+      var cd=normD(c.description),ca=rawAmt(c);
+      var ds=bd&&cd&&bd===cd,as=amtClose(ba,ca);
+      var s=ds&&as?0:ds?1:as&&ba>0?2:99;
+      if(s<bestS){best=i;bestS=s;}
+    });
+    return bestS<99?best:null;
+  };
+
+  // Build merged rows anchored on Doc AI, then append unmatched Claude/Vision
+  var rows=[],clUsed=new Set(),vsUsed=new Set();
+  daLines.forEach(function(dl){
+    var ci=findMatch(dl,clLines,clUsed),vi=findMatch(dl,vsLines,vsUsed);
+    if(ci!=null)clUsed.add(ci); if(vi!=null)vsUsed.add(vi);
+    rows.push({da:dl,cl:ci!=null?clLines[ci]:null,vs:vi!=null?vsLines[vi]:null});
+  });
+  clLines.forEach(function(cl,i){
+    if(clUsed.has(i))return;
+    var vi=findMatch(cl,vsLines,vsUsed);
+    if(vi!=null)vsUsed.add(vi);
+    rows.push({da:null,cl:cl,vs:vi!=null?vsLines[vi]:null});
+  });
+  vsLines.forEach(function(vl,i){if(!vsUsed.has(i))rows.push({da:null,cl:null,vs:vl});});
+
+  _renderedLineItems=rows.map(function(r){return r.vs||r.cl||r.da;});
+
+  var html='';
+  html+='<div style="padding:10px 14px;font-size:12px;color:#666;background:#f4f9fd;border-bottom:1px solid #d5e5f0;">'+
+    (mode==='construction'?'Construction invoice — one consolidated line (CAPM logic). ':'Non-construction — individual lines; freight distributed proportionally. ')+
+    '<strong>Doc AI Amount</strong> = raw extracted value before freight distribution. <strong>Best Value</strong> = Doc AI when layers agree; correcting layer only when it genuinely changed the amount.</div>';
+
+  // Layer header pills
+  var layerHdr=function(label,color,ran){
+    return '<div style="font-size:10px;font-weight:700;color:'+(ran?color:'#aaa')+';text-transform:uppercase;letter-spacing:.04em;">'+(ran?label:label+' —')+'</div>';
+  };
+  html+='<table><tr>';
+  html+='<th>Item Description</th>';
+  html+='<th class="num">'+layerHdr('Doc AI','#107e3e',docaiRan)+'Amount</th>';
+  html+='<th class="num">'+layerHdr('Claude','#3452d1',claudeRan)+'Amount</th>';
+  html+='<th class="num">'+layerHdr('Vision','#9d174d',visionRan)+'Amount</th>';
+  html+='<th class="num">Best Value</th>';
+  html+='<th class="num">Freight</th>';
+  html+='<th>Verdict</th>';
+  html+='<th>Details</th>';
+  html+='</tr>';
+
+  rows.forEach(function(row,idx){
+    var da=row.da,cl=row.cl,vs=row.vs;
+    var best=vs||cl||da;
+    var daAmt=rawAmt(da),clAmt=rawAmt(cl),vsAmt=rawAmt(vs);
+
+    // Best value from most-advanced layer that has a match
+    // Doc AI wins ties; another layer only wins when it genuinely changed/filled the amount
+    var bestAmt,bestLayer;
+    if(da&&daAmt!=null){
+      if(visionRan&&vs&&vsAmt!=null&&!amtClose(vsAmt,daAmt)){bestAmt=vsAmt;bestLayer='vision';}
+      else if(claudeRan&&cl&&clAmt!=null&&!amtClose(clAmt,daAmt)){bestAmt=clAmt;bestLayer='claude';}
+      else{bestAmt=daAmt;bestLayer='docai';}
+    } else if(cl&&clAmt!=null){
+      if(visionRan&&vs&&vsAmt!=null&&!amtClose(vsAmt,clAmt)){bestAmt=vsAmt;bestLayer='vision';}
+      else{bestAmt=clAmt;bestLayer='claude';}
+    } else if(vs&&vsAmt!=null){
+      bestAmt=vsAmt;bestLayer='vision';
+    } else{bestAmt=daAmt;bestLayer='docai';}
+    var bestColor={docai:'#107e3e',claude:'#3452d1',vision:'#9d174d'}[bestLayer];
+    var bestLabel={docai:'Doc AI',claude:'Claude',vision:'Vision'}[bestLayer];
+
+    // Per-cell disagree flags — compare only ran layers, raw-vs-raw
+    var daDiff=false,clDiff=false,vsDiff=false;
+    if(docaiRan&&daAmt!=null&&claudeRan&&clAmt!=null&&!amtClose(daAmt,clAmt)){daDiff=true;clDiff=true;}
+    if(docaiRan&&daAmt!=null&&visionRan&&vsAmt!=null&&!amtClose(daAmt,vsAmt)){daDiff=true;vsDiff=true;}
+    if(claudeRan&&clAmt!=null&&visionRan&&vsAmt!=null&&!amtClose(clAmt,vsAmt)){clDiff=true;vsDiff=true;}
+
+    // Verdict/reason: prefer the layer that actually corrected or flagged this line,
+    // so a real correction (e.g. Claude CORRECTED to $0 with reason) is never buried
+    // by another layer's VERIFIED on the same row. Each layer's amount still shows in its own column.
+    var verdictSrc=
+      (cl&&(cl.lineVerdict==='CORRECTED'||cl.lineVerdict==='FLAGGED'))?cl:
+      (vs&&(vs.lineVerdict==='CORRECTED'||vs.lineVerdict==='FLAGGED'))?vs:
+      best;
+    var verdict=verdictSrc.lineVerdict||'';
+    var desc=escHtml(best.description||'—');
+    if((verdict==='CORRECTED'||verdict==='FLAGGED')&&verdictSrc.lineReason)
+      desc+='<div class="reason">'+escHtml(verdictSrc.lineReason)+'</div>';
+
+    var cellAmt=function(amt,layerRan,hasMatch,differs){
+      var bg=differs?'background:#fff8e1;':'';
+      var val;
+      if(!layerRan) val='<span style="color:#ccc;font-size:11px;">not run</span>';
+      else if(!hasMatch||amt==null) val='<span style="color:#bbb;font-size:11px;">—</span>';
+      else val=(differs?'<strong>':'')+'$'+money(amt)+(differs?'</strong>':'');
+      return '<td class="num" style="'+bg+'">'+val+'</td>';
+    };
+
+    var freight=best.freightAmount||0;
+    html+='<tr>';
+    html+='<td>'+desc+'</td>';
+    html+=cellAmt(daAmt, docaiRan, !!da, daDiff);
+    html+=cellAmt(clAmt, claudeRan, !!cl, clDiff);
+    html+=cellAmt(vsAmt, visionRan, !!vs, vsDiff);
+    html+='<td class="num"><strong>$'+money(bestAmt)+'</strong><br>'
+      +'<span style="display:inline-block;background:'+bestColor+';color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;margin-top:2px;white-space:nowrap;">'+bestLabel+'</span></td>';
+    html+='<td class="num">'+(freight>0&&verdict!=='SUPPRESSED'&&!best.isFreight?'$'+money(freight):'<span style="color:#ccc;">—</span>')+'</td>';
+    html+='<td>'+(verdict?lineVerdictPill(verdict):'')+'</td>';
+    html+='<td><span class="link" onclick="openItemDetails('+idx+')">&#9656; Click</span></td>';
+    html+='</tr>';
+  });
+  html+='</table>';
+
+  // totD kept for APC-reconciliation and suppressed-lines blocks below — NOT used for totals display.
+  var totD=visionResult||claudeResult||docaiResult||data;
+
+  // Per-layer totals table — each column reads only from its own result object.
+  // No value is ever shared between layers; re-running one layer touches only its column.
+  var _th=function(label,color,ran){
+    return '<th style="padding:7px 12px;background:#f4f6f9;font-size:11px;font-weight:700;'
+      +'color:'+(ran?color:'#bbb')+';text-align:right;border-left:1px solid #eaecef;'
+      +'border-bottom:2px solid #d8dde6;">'
+      +label+(ran?'':' <span style="font-weight:400;font-size:10px;">(not run)</span>')
+      +'</th>';
+  };
+  var _td=function(ran,result,valFn){
+    if(!ran||!result)
+      return '<td style="padding:7px 12px;text-align:right;color:#bbb;font-size:11px;border-left:1px solid #eaecef;">not run</td>';
+    return '<td style="padding:7px 12px;text-align:right;border-left:1px solid #eaecef;">'+valFn(result)+'</td>';
+  };
+  var _fNet=function(r){ return r.invoiceNetTotal!=null?'<strong>$'+money(r.invoiceNetTotal)+'</strong>':'<span style="color:#bbb;">—</span>'; };
+  var _fTax=function(r){ return r.vendorTaxAmount==null?'<span style="color:#999;">not on invoice</span>':'$'+money(r.vendorTaxAmount); };
+  var _fTot=function(r){ var v=r.invoiceGrossTotal!=null?r.invoiceGrossTotal:r.invoiceTotalAmount; return v!=null?'<strong>$'+money(v)+'</strong>':'<span style="color:#bbb;">—</span>'; };
+  var _fReco=function(r){
+    var rc=r.totalAmountReconciliation;
+    if(!rc||rc.rawTotal==null)return '<span style="color:#999;font-size:10px;">—</span>';
+    if(rc.match)
+      return '<span style="color:#166534;font-weight:700;">&#10003; MATCH</span>'
+        +'<div style="font-size:10px;color:#555;margin-top:1px;">$'+money(rc.rawTotal)+'</div>';
+    return '<span style="color:#991b1b;font-weight:700;">&#10007; MISMATCH</span>'
+      +'<div style="font-size:10px;color:#999;margin-top:1px;">diff&nbsp;$'+money(Math.abs(rc.difference))+'</div>';
+  };
+
+  html+='<div style="border-top:2px solid #e8ecf0;padding:10px 14px 6px;">';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<thead><tr>'
+    +'<th style="padding:7px 10px;background:#f4f6f9;font-size:11px;font-weight:600;color:#666;text-align:left;border-bottom:2px solid #d8dde6;">Totals</th>'
+    +_th('Doc AI','#107e3e',docaiRan)
+    +_th('Claude','#3452d1',claudeRan)
+    +_th('Vision','#9d174d',visionRan)
+    +'</tr></thead><tbody>';
+  html+='<tr><td style="padding:7px 10px;color:#555;">Net (incl. freight)</td>'
+    +_td(docaiRan,docaiResult,_fNet)
+    +_td(claudeRan,claudeResult,_fNet)
+    +_td(visionRan,visionResult,_fNet)
+    +'</tr>';
+  html+='<tr style="background:#fafafa;"><td style="padding:7px 10px;color:#555;">Vendor tax</td>'
+    +_td(docaiRan,docaiResult,_fTax)
+    +_td(claudeRan,claudeResult,_fTax)
+    +_td(visionRan,visionResult,_fTax)
+    +'</tr>';
+  html+='<tr><td style="padding:7px 10px;color:#444;font-weight:600;">Invoice total</td>'
+    +_td(docaiRan,docaiResult,_fTot)
+    +_td(claudeRan,claudeResult,_fTot)
+    +_td(visionRan,visionResult,_fTot)
+    +'</tr>';
+  html+='<tr style="background:#fafafa;"><td style="padding:7px 10px;color:#555;">Reconciliation</td>'
+    +_td(docaiRan,docaiResult,_fReco)
+    +_td(claudeRan,claudeResult,_fReco)
+    +_td(visionRan,visionResult,_fReco)
+    +'</tr>';
+  html+='</tbody></table>';
+  html+='<div style="padding:6px 2px 2px;font-size:11px;color:#999;">Vertex tax: N/A — requires Vertex</div>';
+  html+='</div>';
+
+  var apcR=totD.apcReconciliation||null;
+  if(apcR){
+    if(apcR.status==='all-good'||apcR.status==='gross-apc-match'){
+      html+='<div style="margin:10px 14px;padding:10px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:13px;color:#166534;display:flex;align-items:center;gap:10px;">';
+      html+='<span style="font-size:16px;font-weight:700;">&#10003;</span><span><strong>'+apcR.label+'</strong> &nbsp; Gross <strong>'+money(apcR.gross)+'</strong> = APC End <strong>'+money(apcR.apcEnd)+'</strong></span></div>';
+    } else if(apcR.status==='mismatch'){
+      html+='<div style="margin:10px 14px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;font-size:13px;color:#991b1b;display:flex;align-items:center;gap:10px;">';
+      html+='<span style="font-size:16px;font-weight:700;">&#10007;</span><span><strong>'+apcR.label+'</strong> &nbsp; Gross <strong>'+money(apcR.gross)+'</strong> vs APC End <strong>'+money(apcR.apcEnd)+'</strong> &nbsp;<span style="background:#fca5a5;border-radius:4px;padding:1px 7px;font-size:12px;">diff '+money(apcR.diff)+'</span></span></div>';
+    } else {
+      html+='<div style="margin:10px 14px;padding:8px 14px;font-size:12px;color:#999;font-style:italic;">'+apcR.label+'</div>';
+    }
+  }
+
+  var suppressed=totD.suppressedLines||[];
+  if(suppressed.length){
+    html+='<div style="padding:10px 14px;font-size:12px;font-weight:600;color:#888;background:#fafafa;border-top:1px solid #e0e0e0;">Suppressed rows (not billable) — caught and removed by AI</div>';
+    html+='<table><tr><th>Description</th><th>Type</th><th class="num">Amount</th><th>Reason</th><th>Suppressed by</th></tr>';
+    suppressed.forEach(function(li){
+      var lt=li.lineType||null;
+      var tl=lt==='shipping'?'Shipping':lt==='tax'?'Tax':'PO/PR';
+      var tb=lt==='shipping'?'#dbeafe':lt==='tax'?'#fef3c7':'#e5e7eb';
+      var tf=lt==='shipping'?'#1d4ed8':lt==='tax'?'#92400e':'#374151';
+      var sb=Array.isArray(li.suppressedBy)?li.suppressedBy:(li.suppressedBy?[li.suppressedBy]:['docai']);
+      var badges=sb.map(function(layer){
+        var lbl=layer==='claude'?'Claude':layer==='vision'?'Vision':'Doc AI';
+        var bg=layer==='claude'?'#ede9fe':layer==='vision'?'#d1fae5':'#dbeafe';
+        var fg=layer==='claude'?'#5b21b6':layer==='vision'?'#065f46':'#1e40af';
+        return '<span style="display:inline-block;background:'+bg+';color:'+fg+';padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;margin-right:3px;">'+lbl+'</span>';
+      }).join('');
+      html+='<tr style="color:#999;"><td><span style="text-decoration:line-through;">'+(li.description||'—')+'</span></td>';
+      html+='<td><span style="display:inline-block;background:'+tb+';color:'+tf+';padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">'+tl+'</span></td>';
+      html+='<td class="num" style="text-decoration:line-through;">'+money(li.amount)+'</td>';
+      html+='<td style="font-size:12px;">'+(li.suppressReason||li.lineReason||'—')+'</td>';
+      html+='<td>'+badges+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  document.getElementById('lineItemsContent').innerHTML=html;
+}
+
+function openItemDetails(i){
+  var li=_renderedLineItems[i]||(lastResult&&(lastResult.lineItems||[])[i]); if(!li)return;
+  var html;
+  if(!li.jurisdictions){
+    html='<div style="padding:24px;text-align:center;color:#999;"><span class="pill mock">NOT WIRED</span><p style="margin-top:12px;">Jurisdiction tax breakdown (State / County / City / District) requires the Vertex integration, which is not connected in this POC.</p><p style="font-size:12px;">Freight distribution shown in the line items is computed live from extraction.</p></div>';
+  } else {
+    var t=li.jurisdictionTotals||{};
+    html='<div style="padding:6px 0 10px;"><span class="pill mock">MOCK</span> <span style="font-size:12px;color:#8a5a00;">Simulated Vertex jurisdiction split (State/County/City/District) — rates sum correctly for illustration.</span></div>';
+    html+='<table><tr><th>Jurisdiction</th><th>Taxability</th><th class="num">Tax Rate</th><th class="num">Taxable Amount (Line)</th><th class="num">Tax Amount (Line)</th><th class="num">Taxable Amount (Freight)</th><th class="num">Tax Amount (Freight)</th><th class="num">Total Tax</th></tr>';
+    li.jurisdictions.forEach(function(j){
+      html+='<tr><td>'+j.jurisdiction+'</td><td>'+j.taxability+'</td><td class="num">'+money(j.taxRate)+'</td>';
+      html+='<td class="num">'+money(j.taxableAmountLine)+'</td><td class="num">'+money(j.taxAmountLine)+'</td>';
+      html+='<td class="num">'+money(j.taxableAmountFreight)+'</td><td class="num">'+money(j.taxAmountFreight)+'</td><td class="num">'+money(j.totalTaxAmount)+'</td></tr>';
+    });
+    html+='<tr class="totals-row"><td>Total</td><td></td><td class="num">'+money(t.rate)+'</td><td></td><td class="num">'+money(t.line)+'</td><td></td><td class="num">'+money(t.freight)+'</td><td class="num">'+money(t.total)+'</td></tr>';
+    html+='</table>';
+  }
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function renderChangelog(data){
+  var fields=(data.fields||[]).filter(function(f){return f.verdict==='CORRECTED';});
+  if(!fields.length){document.getElementById('changelogContent').innerHTML='<div class="placeholder">No corrections — all fields verified as extracted</div>';return;}
+  var html='<table><tr><th>Field</th><th>New Value (AI-Verified)</th><th>Old Value (Doc AI)</th><th>Modified On</th><th>Modified By</th></tr>';
+  var now=new Date().toLocaleString();
+  fields.forEach(function(f){
+    html+='<tr><td>'+f.fieldName+'</td><td class="arrow">'+(f.correctValue||'')+'</td><td class="strike">'+(f.docAIValue||'(empty)')+'</td><td>'+now+'</td><td>Claude (SAP AI Core)</td></tr>';
+  });
+  html+='</table>';
+  html+='<div style="padding:12px 14px;font-size:12px;color:#666;">Every correction is logged with old/new value and attributed to the intelligence layer — a full audit trail for tax defensibility.</div>';
+  document.getElementById('changelogContent').innerHTML=html;
+}
+
+function _checkLabel(name){
+  var labels={lineItemsSumToNet:'Line Items Sum to Net',grossEqualsNetPlusTax:'Gross = Net + Tax',freightReconciles:'Freight Reconciliation',poFormat:'PO Number Format',shipToCompleteForVertex:'Ship-to Complete for Vertex'};
+  return labels[name]||name;
+}
+function _checkValueChips(c){
+  var v=c.values||{}, pairs=[], m=function(n){return n!=null?'$'+money(n):'—';};
+  if(c.name==='lineItemsSumToNet') pairs=[['Line items',m(v.lineSum)],['Invoice net',m(v.netTotal)],['Diff',m(v.diff)]];
+  else if(c.name==='grossEqualsNetPlusTax') pairs=[['Gross',m(v.gross)],['Net',m(v.netTotal)],['Tax',m(v.vendorTax)],['Expected',m(v.expected)],['Diff',m(v.diff)]];
+  else if(c.name==='freightReconciles') pairs=[['Distributed',m(v.freightSum)],['Source total',m(v.freightTotal)],['Diff',m(v.diff)]];
+  else if(c.name==='poFormat') pairs=[['PO',escHtml(String(v.purchaseOrderNumber||'—'))]];
+  else if(c.name==='shipToCompleteForVertex') pairs=[['City',escHtml(v.shipToCity||'(missing)')],['Postal',escHtml(v.shipToPostalCode||'(missing)')]];
+  if(!pairs.length)return '';
+  return '<div class="chk-values">'+pairs.map(function(p){return '<span class="chk-val-chip">'+p[0]+': <strong>'+p[1]+'</strong></span>';}).join('')+'</div>';
+}
+function renderManualActionBanner(ma){
+  if(!ma||ma.required===undefined)return '';
+  if(ma.required){
+    var items=(ma.reasons||[]).map(function(r){return '<li>'+escHtml(r)+'</li>';}).join('');
+    return '<div class="ma-banner-fail"><div style="font-weight:700;color:#c62828;margin-bottom:4px;">&#9888; Manual Action Required</div><ul class="ma-reason-list">'+items+'</ul></div>';
+  }
+  return '<div class="ma-banner-ok"><span style="font-size:18px;color:#2e7d32;">&#10003;</span><span style="font-weight:600;color:#1b5e20;font-size:13px;">All consistency checks passed &mdash; no manual action needed.</span></div>';
+}
+
+function renderIntel(data){
+  var fields=data.fields||[], s=data.stats||{}, checks=data.consistencyChecks||[], cv=data.costValue||{}, ma=data.manualAction||{};
+  var html='<div class="hero-banner"><h2>&#9889; Extraction Intelligence Report</h2><p>SAP Document AI + Claude (SAP AI Core), each doing what it does best. Verified, corrected, and explained &mdash; audit-ready tax data.</p></div>';
+  html+=renderManualActionBanner(ma);
+  html+='<div class="card"><div class="metric-row">';
+  html+='<div class="metric"><div class="v">'+(s.total||0)+'</div><div class="l">Fields Audited</div></div>';
+  html+='<div class="metric"><div class="v" style="color:#107e3e;">'+(s.verified||0)+'</div><div class="l">Verified</div></div>';
+  html+='<div class="metric"><div class="v" style="color:#df6e0c;">'+(s.corrected||0)+'</div><div class="l">Corrected by AI</div></div>';
+  html+='<div class="metric"><div class="v" style="color:#bb0000;">'+(s.flagged||0)+'</div><div class="l">Flagged for Review</div></div>';
+  html+='</div></div>';
+  html+='<div class="card"><div class="card-title">Architecture — Three-Layer Cascade</div><div style="padding:16px 20px;">';
+  html+='<div style="display:flex;flex-direction:column;align-items:center;gap:0;font-size:13px;">';
+  // Layer 1
+  html+='<div style="width:100%;max-width:480px;background:#e8f5e9;border:1.5px solid #81c784;border-radius:8px;padding:13px 16px;">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+  html+='<strong style="font-size:14px;">Layer 1 — SAP Document AI</strong><span class="pill live" style="font-size:10px;">LIVE</span></div>';
+  html+='<div style="color:#2e7d32;margin-top:4px;font-size:12px;">100% of invoices &nbsp;·&nbsp; ~80% accuracy &nbsp;·&nbsp; pennies/doc &nbsp;·&nbsp; structured OCR extraction</div>';
+  html+='</div>';
+  // Gate
+  html+='<div style="display:flex;flex-direction:column;align-items:center;margin:0;">';
+  html+='<div style="width:2px;height:14px;background:#aaa;"></div>';
+  html+='<div style="background:#fff8e1;border:1.5px solid #ffc107;border-radius:20px;padding:5px 18px;font-size:11px;font-weight:700;color:#6d4c00;white-space:nowrap;">&#9654; Confidence gate — ~80% auto-verified, ~20% escalate</div>';
+  html+='<div style="width:2px;height:14px;background:#aaa;"></div>';
+  html+='</div>';
+  // Layer 2
+  html+='<div style="width:100%;max-width:480px;background:#e3f2fd;border:1.5px solid #64b5f6;border-radius:8px;padding:13px 16px;">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+  html+='<strong style="font-size:14px;">Layer 2 — Claude Text Audit</strong><span class="pill live" style="font-size:10px;">LIVE</span></div>';
+  html+='<div style="color:#1565c0;margin-top:4px;font-size:12px;">~20% of invoices &nbsp;·&nbsp; ~95% accuracy &nbsp;·&nbsp; ~$0.09/triggered doc &nbsp;·&nbsp; field-level verification + correction</div>';
+  html+='</div>';
+  // Arrow to Layer 3
+  html+='<div style="display:flex;flex-direction:column;align-items:center;margin:0;">';
+  html+='<div style="width:2px;height:14px;background:#aaa;"></div>';
+  html+='<div style="background:#f5f5f5;border:1.5px dashed #bbb;border-radius:20px;padding:5px 18px;font-size:11px;font-weight:700;color:#888;white-space:nowrap;">&#9654; Scanned / handwritten / image-only invoices</div>';
+  html+='<div style="width:2px;height:14px;background:#aaa;"></div>';
+  html+='</div>';
+  // Layer 3
+  html+='<div style="width:100%;max-width:480px;background:#f5f5f5;border:1.5px dashed #bbb;border-radius:8px;padding:13px 16px;opacity:0.8;">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+  html+='<strong style="font-size:14px;color:#666;">Layer 3 — Claude Vision</strong><span class="pill planned" style="font-size:10px;margin-left:8px;">PLANNED</span></div>';
+  html+='<div style="color:#888;margin-top:4px;font-size:12px;">Scanned invoices only &nbsp;·&nbsp; ~97% accuracy &nbsp;·&nbsp; reads image directly &nbsp;·&nbsp; closes gap on OCR-hard documents</div>';
+  html+='</div>';
+  html+='</div>';
+  html+='<div style="margin-top:14px;text-align:center;font-size:12px;color:#666;border-top:1px solid #f0f0f0;padding-top:10px;">Blended ~$0.02–$0.03 / invoice &mdash; gate keeps ~75% off Claude, premium model fires only where error is expensive.</div>';
+  html+='</div></div>';
+  if(data.summary) html+='<div class="card"><div class="card-title">Executive Summary</div><div style="padding:14px;font-size:13px;line-height:1.6;">'+data.summary+'</div></div>';
+  var corrected=fields.filter(function(f){return f.verdict==='CORRECTED'||f.verdict==='FLAGGED';});
+  if(corrected.length){
+    html+='<div class="card"><div class="card-title">What the AI Caught (Doc AI missed)</div>';
+    corrected.forEach(function(f){
+      html+='<div style="padding:12px 14px;border-top:1px solid #f0f0f0;">'+verdictPill(f.verdict)+' <strong style="margin-left:8px;">'+f.fieldName+'</strong>';
+      if(f.verdict==='CORRECTED') html+='<div style="margin-top:5px;"><span class="strike">'+(f.docAIValue||'(empty)')+'</span> <span class="arrow">→ '+(f.correctValue||'')+'</span></div>';
+      html+='<div class="reason">💡 '+(f.reason||'')+'</div></div>';
+    });
+    html+='</div>';
+  }
+  if(checks.length){
+    var errChecks=checks.filter(function(c){return c.severity==='error';});
+    var wrnChecks=checks.filter(function(c){return c.severity!=='error';});
+    var byFailed=function(a,b){return (a.passed===b.passed)?0:(a.passed?1:-1);};
+    var sorted=errChecks.slice().sort(byFailed).concat(wrnChecks.slice().sort(byFailed));
+    html+='<div class="card"><div class="card-title">Consistency &amp; Validation</div>';
+    html+=renderManualActionBanner(ma);
+    if(errChecks.length){html+='<div style="padding:4px 14px 0;font-size:11px;color:#888;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Checks — Errors</div>';}
+    html+='<div style="padding:4px 14px 10px;">';
+    var inWarnings=false;
+    sorted.forEach(function(c){
+      if(!inWarnings&&c.severity!=='error'){
+        inWarnings=true;
+        html+='</div><div style="padding:4px 14px 0;font-size:11px;color:#888;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Warnings</div><div style="padding:4px 14px 10px;">';
+      }
+      var ok=c.passed;
+      var icon=ok?'&#10003;':'&#10007;';
+      var iconClr=ok?'#107e3e':(c.severity==='error'?'#c62828':'#e65100');
+      var bg=ok?'':(c.severity==='error'?'background:#fff5f5;':'background:#fff8f0;');
+      var bl=ok?'border-left:3px solid #b8e0c5;':(c.severity==='error'?'border-left:3px solid #e53935;':'border-left:3px solid #fb8c00;');
+      html+='<div class="chk-row" style="'+bg+bl+'">';
+      html+='<span class="chk-icon" style="color:'+iconClr+';">'+icon+'</span>';
+      html+='<div style="flex:1;min-width:0;">';
+      html+='<div style="font-weight:600;font-size:12.5px;color:#222;">'+escHtml(_checkLabel(c.name))+'</div>';
+      html+='<div style="font-size:12px;color:#555;margin-top:2px;">'+escHtml(c.message)+'</div>';
+      if(!ok)html+=_checkValueChips(c);
       html+='</div></div>';
+    });
+    html+='</div></div>';
+  }
+  html+='<div class="cv-hero"><h2>💰 Cost vs Value</h2><p>Document AI runs on 100% of invoices (cheap, fast). Claude fires only on the risky ~20% that carry tax exposure. You pay the premium engine exactly where error is expensive.</p></div>';
+  html+='<div class="card"><div style="padding:14px;"><div class="worlds">';
+  html+='<div class="world docai"><h5>SAP Document AI</h5>Fast structured OCR on every invoice. ~80–95% accurate. Scanned docs, tables, high volume.</div>';
+  html+='<div class="world-plus">+</div>';
+  html+='<div class="world claude"><h5>Claude (SAP AI Core)</h5>Judgment on the hard 20%: verifies against source, corrects, explains. Confidence-triggered.</div>';
+  html+='</div><div style="text-align:center;font-size:12px;color:#666;margin-top:8px;">Best of both worlds — volume + judgment, at a fraction of the cost of either extreme.</div></div></div>';
+  var triggered=cv.claudeTriggered!=null?cv.claudeTriggered:true;
+  html+='<div class="card"><div class="card-title">This Invoice</div><div style="padding:14px;font-size:13px;">';
+  html+=triggered?'<span class="pill corrected">CLAUDE TRIGGERED</span> Hit the confidence gate '+(cv.triggerReasons&&cv.triggerReasons.length?'('+cv.triggerReasons.join('; ')+')':'')+' — Claude adjudicated. Cost: Doc AI $'+money(cv.docAICostPerDoc||roi.docAICost)+' + Claude $'+money(cv.claudeCostPerDoc||roi.claudeCost)+'.':'<span class="pill verified">AUTO-VERIFIED</span> Doc AI high-confidence on all tax-critical fields — Claude NOT called. Cost: Doc AI $'+money(cv.docAICostPerDoc||roi.docAICost)+' only. (~80% of invoices.)';
+  html+='</div></div>';
+  html+='<div class="card"><div class="card-title">Annual ROI — adjust the levers <span class="pill mock">ILLUSTRATIVE</span></div><div style="padding:14px;">';
+  html+='<div class="cv-two" style="grid-template-columns:1fr 1fr 1fr;">';
+  html+='<div class="lever"><label>Annual invoice volume</label><input type="number" id="lv-vol" value="'+roi.annualVolume+'" oninput="updateROI()"></div>';
+  html+='<div class="lever"><label>Claude trigger rate (%)</label><input type="number" id="lv-trig" value="'+roi.triggerRate+'" oninput="updateROI()"></div>';
+  html+='<div class="lever"><label>Minutes saved / adjudicated</label><input type="number" id="lv-min" value="'+roi.minutesSaved+'" oninput="updateROI()"></div>';
+  html+='<div class="lever"><label>Analyst rate ($/hour)</label><input type="number" id="lv-rate" value="'+roi.hourlyRate+'" oninput="updateROI()"></div>';
+  html+='<div class="lever"><label>Doc AI cost / invoice ($)</label><input type="number" step="0.01" id="lv-dai" value="'+roi.docAICost+'" oninput="updateROI()"></div>';
+  html+='<div class="lever"><label>Claude cost / triggered ($)</label><input type="number" step="0.001" id="lv-cl" value="'+roi.claudeCost+'" oninput="updateROI()"></div></div>';
+  html+='<div class="cv-two"><div class="cv-box cv-cost"><h4>Added Model Cost / year</h4><div class="cv-big" id="cv-cost">$0</div><div class="cv-sub" id="cv-cost-sub"></div></div>';
+  html+='<div class="cv-box cv-value"><h4>Analyst Time Saved / year</h4><div class="cv-big" id="cv-value">$0</div><div class="cv-sub" id="cv-value-sub"></div></div></div>';
+  html+='<div class="payback" id="cv-payback"></div>';
+  html+='<div style="font-size:11px;color:#999;line-height:1.5;">Model cost is the Claude layer added on triggered invoices only. Time-saved is loaded analyst cost avoided. Risk-events avoided (wrong jurisdiction → audit exposure) are additional and not monetized here.</div></div></div>';
+  html+='<div class="card"><div class="card-title">Reusable Asset — Beyond USE Tax</div><div style="padding:14px;font-size:13px;line-height:1.7;color:#444;">Domain-configurable: swap the rule set and it audits any extraction workflow — <strong>AP invoices, contracts, claims, KYC, purchase orders</strong>. Cheap engine extracts, premium engine adjudicates the risky minority, every change explained.</div></div>';
+  html+='<div class="card" style="border:2px dashed #b0c4de;background:#f8f9fb;">';
+  html+='<div class="card-title">&#128269; Roadmap: Claude Vision <span class="pill planned" style="margin-left:8px;">PLANNED</span></div>';
+  html+='<div style="padding:14px;font-size:13px;line-height:1.7;color:#555;">Today the layer audits against extracted text — ideal for digital PDFs. Next phase adds <strong>Claude Vision</strong>: the model reads the invoice image directly, closing the gap on scanned, handwritten, and image-based invoices that OCR text extraction can\'t fully capture. Same architecture, multimodal upgrade — driving accuracy higher on the hardest documents.</div>';
+  html+='</div>';
+  document.getElementById('intelContent').innerHTML=html;
+  updateROI();
+}
 
-      if(data.summary) html+='<div class="card"><div class="card-title">Executive Summary</div><div style="padding:14px;font-size:13px;line-height:1.6;">'+data.summary+'</div></div>';
+function updateROI(){
+  var g=function(id,def){var el=document.getElementById(id);return el?parseFloat(el.value)||0:def;};
+  roi.annualVolume=g('lv-vol',roi.annualVolume); roi.triggerRate=g('lv-trig',roi.triggerRate);
+  roi.minutesSaved=g('lv-min',roi.minutesSaved); roi.hourlyRate=g('lv-rate',roi.hourlyRate);
+  roi.docAICost=g('lv-dai',roi.docAICost); roi.claudeCost=g('lv-cl',roi.claudeCost);
+  var triggered=roi.annualVolume*(roi.triggerRate/100);
+  var addedModelCost=triggered*roi.claudeCost;
+  var timeSaved=triggered*(roi.minutesSaved/60)*roi.hourlyRate;
+  var costEl=document.getElementById('cv-cost'); if(!costEl)return;
+  costEl.textContent='$'+Math.round(addedModelCost).toLocaleString();
+  document.getElementById('cv-cost-sub').textContent=Math.round(triggered).toLocaleString()+' triggered × $'+roi.claudeCost.toFixed(3);
+  document.getElementById('cv-value').textContent='$'+Math.round(timeSaved).toLocaleString();
+  document.getElementById('cv-value-sub').textContent=Math.round(triggered).toLocaleString()+' × '+roi.minutesSaved+' min @ $'+roi.hourlyRate+'/hr';
+  var ratio=addedModelCost>0?(timeSaved/addedModelCost):0;
+  document.getElementById('cv-payback').innerHTML='Every <b>$1</b> spent on the Claude layer returns <b>$'+ratio.toFixed(0)+'</b> in analyst time saved &mdash; before counting audit-risk avoided.';
+}
 
-      var corrected=fields.filter(function(f){return f.verdict==='CORRECTED'||f.verdict==='FLAGGED';});
-      if(corrected.length){
-        html+='<div class="card"><div class="card-title">What the AI Caught</div>';
-        corrected.forEach(function(f){
-          html+='<div style="padding:12px 14px;border-top:1px solid #f0f0f0;">'+verdictPill(f.verdict)+' <strong style="margin-left:8px;">'+f.fieldName+'</strong>';
-          if(f.verdict==='CORRECTED') html+='<div style="margin-top:5px;"><span class="strike">'+(f.docAIValue||'(empty)')+'</span> <span class="arrow">→ '+(f.correctValue||'')+'</span></div>';
-          html+='<div class="reason">💡 '+(f.reason||'')+'</div></div>';
-        });
-        html+='</div>';
-      }
+// ── Resizable panels ─────────────────────────────────────────────────────────
+(function(){
+  var handle=document.getElementById('dragHandle');
+  var leftPanel=document.getElementById('detailsPanel');
+  var container=document.querySelector('.container');
+  var dragging=false, startX=0, startWidth=0;
+  handle.addEventListener('mousedown',function(e){
+    dragging=true; startX=e.clientX; startWidth=leftPanel.offsetWidth;
+    document.body.style.userSelect='none'; document.body.style.cursor='col-resize';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var maxW=Math.floor(container.offsetWidth*0.75);
+    var newW=Math.max(340,Math.min(maxW,startWidth+(e.clientX-startX)));
+    leftPanel.style.flex='0 0 '+newW+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    if(!dragging)return;
+    dragging=false; document.body.style.userSelect=''; document.body.style.cursor='';
+  });
+})();
 
-      if(checks.length){
-        html+='<div class="card"><div class="card-title">Cross-Field Consistency Checks</div>';
-        checks.forEach(function(c){
-          var pill=c.result==='PASS'?'<span class="pill pass">✓ PASS</span>':'<span class="pill fail">✗ FAIL</span>';
-          html+='<div class="check-item">'+pill+'<div><strong>'+c.check+'</strong><div class="reason">'+(c.detail||'')+'</div></div></div>';
-        });
-        html+='</div>';
-      }
+// ── Invoice Picker ────────────────────────────────────────────────────────────
+async function loadInvoiceList(){
+  try{
+    var res=await fetch('/api/intelligence/listInvoices',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    var text=await res.text(); var data=JSON.parse(text);
+    if(data&&typeof data.value==='string') data=JSON.parse(data.value);
+    allInvoices=Array.isArray(data)?data:[];
+    filterAssetOnly=document.getElementById('assetFilter').checked;
+    filterPicker();
+  }catch(e){
+    document.getElementById('pickerCount').textContent='Could not load invoice list';
+    var sel=document.getElementById('pickerSelect');
+    sel.innerHTML='<option value="">— list unavailable —</option>';
+  }
+}
 
-      if(lic.length){
-        html+='<div class="card"><div class="card-title">Line-Item Adjudication</div>';
-        lic.forEach(function(c){
-          var pill=c.action.indexOf('SUPPRESS')===0?'<span class="pill suppress">'+c.action.replace(/_/g,' ')+'</span>':c.action.indexOf('FLAGGED')===0?'<span class="pill freight">'+c.action.replace(/_/g,' ')+'</span>':'<span class="pill corrected">'+c.action.replace(/_/g,' ')+'</span>';
-          html+='<div style="padding:10px 14px;border-top:1px solid #f0f0f0;font-size:12px;">'+pill+' <strong style="margin-left:8px;">'+(c.description||'')+'</strong>';
-          if(c.oldValue||c.newValue) html+='<div style="margin-top:4px;"><span class="strike">'+(c.oldValue||'')+'</span> <span class="arrow">→ '+(c.newValue||'')+'</span></div>';
-          html+='<div class="reason">💡 '+(c.reason||'')+'</div></div>';
-        });
-        html+='</div>';
-      }
+function _pickerBase(){
+  return filterAssetOnly?allInvoices.filter(function(i){return i.hasAssetData;}):allInvoices;
+}
 
-      html+='<div class="card"><div class="card-title">Reusable Asset — Beyond USE Tax</div><div style="padding:14px;font-size:13px;line-height:1.7;color:#444;">This intelligence layer is <strong>domain-configurable</strong>. Swap the rule set and it audits any extraction workflow: <strong>AP invoices, contracts, claims, KYC documents, purchase orders</strong>. The pattern — extract with any engine, verify with an LLM against the source, explain every change — is a repeatable accelerator for document-heavy processes across the enterprise.</div></div>';
+function applyAssetFilter(){
+  filterAssetOnly=document.getElementById('assetFilter').checked;
+  document.getElementById('pickerSearch').value='';
+  filterPicker();
+}
 
-      document.getElementById('intelContent').innerHTML=html;
-    }
-  </script>
+function populatePicker(list){
+  var sel=document.getElementById('pickerSelect');
+  sel.innerHTML='<option value="">— pick an invoice to load it —</option>';
+  list.forEach(function(inv){
+    var opt=document.createElement('option');
+    opt.value=inv.fileName;
+    opt.textContent=inv.scnid+' — '+(inv.supplierName||'Unknown supplier')+(inv.hasAssetData?' ✓':'');
+    sel.appendChild(opt);
+  });
+}
+
+function _updatePickerCount(shown, query){
+  var total=allInvoices.length;
+  var withAsset=allInvoices.filter(function(i){return i.hasAssetData;}).length;
+  var note=document.getElementById('assetFilterNote');
+  var label;
+  if(filterAssetOnly){
+    label=query?(shown+' matching — Showing '+withAsset+' with asset data'):('Showing '+withAsset+' invoices with asset data');
+    if(note)note.textContent='('+withAsset+' of '+total+' total)';
+  }else{
+    label=query?(shown+' matching — Showing all '+total):('Showing all '+total+' invoices');
+    if(note)note.textContent='';
+  }
+  document.getElementById('pickerCount').textContent=label;
+}
+
+function filterPicker(){
+  var q=document.getElementById('pickerSearch').value.toLowerCase().trim();
+  var base=_pickerBase();
+  var filtered=q?base.filter(function(inv){
+    return inv.scnid.includes(q)||(inv.supplierName||'').toLowerCase().includes(q);
+  }):base;
+  populatePicker(filtered);
+  _updatePickerCount(filtered.length,q);
+}
+
+function quickPickByScnid(scnid){
+  var inv=allInvoices.find(function(i){return i.scnid===scnid;});
+  if(!inv){alert('Invoice '+scnid+' not found in loaded list.');return;}
+  pickInvoice(inv.fileName);
+}
+
+function quickPickByType(keyword){
+  var kw=keyword.toLowerCase();
+  var inv=allInvoices.find(function(i){
+    return (i.fileName||'').toLowerCase().includes(kw)||(i.supplierName||'').toLowerCase().includes(kw);
+  });
+  if(!inv){alert('No '+keyword+' invoice found in list. Try typing it in the search box.');return;}
+  pickInvoice(inv.fileName);
+}
+
+async function pickInvoice(fileName){
+  if(!fileName)return;
+  var statusBox=document.getElementById('statusBox');
+  statusBox.innerHTML='<div class="status-msg loading"><span class="spinner"></span>Loading '+fileName+' from server…</div>';
+  // reset picker selection after triggering so it can be re-picked
+  document.getElementById('pickerSelect').value='';
+  try{
+    var res=await fetch('/api/intelligence/getInvoiceFile',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fileName:fileName})
+    });
+    if(!res.ok) throw new Error('Server returned '+res.status);
+    var text=await res.text(); var data=JSON.parse(text);
+    // CAP action returning String comes back as {value:"<base64>"} or plain string
+    var base64=typeof data.value==='string'?data.value:(typeof data==='string'?data:null);
+    if(!base64) throw new Error('No base64 data in response');
+    var bytes=atob(base64); var arr=new Uint8Array(bytes.length);
+    for(var i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    var blob=new Blob([arr],{type:'application/pdf'});
+    var file=new File([blob],fileName,{type:'application/pdf'});
+    statusBox.innerHTML='';
+    handleFile(file);
+  }catch(e){
+    statusBox.innerHTML='<div class="status-msg error">❌ Failed to load invoice: '+e.message+'</div>';
+  }
+}
+
+loadInvoiceList();
+</script>
 </body>
 </html>

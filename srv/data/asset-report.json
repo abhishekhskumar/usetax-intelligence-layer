@@ -1,0 +1,20 @@
+{
+  "bySCN": {
+    "8505561486": [
+      {
+        "scnId": "8505561486",
+        "supplierName": "",
+        "shipToAddressSAP": "",
+        "poNumber": "",
+        "apcEndValue": "",
+        "supplierPostalCode": "",
+        "postalCodeShipTo": "",
+        "cityName": "",
+        "supplierCity": "",
+        "stateName": "",
+        "supplierState": "",
+        "supplierCountry": ""
+      }
+    ]
+  }
+}
